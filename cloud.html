@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Imágenes en GCS</title>
+</head>
+<body>
+    <h2>Iniciar Sesión</h2>
+    <input type="text" id="username" placeholder="Usuario">
+    <input type="password" id="password" placeholder="Contraseña">
+    <button onclick="login()">Entrar</button>
+
+    <div id="busqueda" style="display:none;">
+        <h2>Buscar Imagen</h2>
+        <input type="text" id="sku" placeholder="Ingrese SKU">
+        <button onclick="buscar()">Buscar</button>
+        <div id="resultados"></div>
+    </div>
+
+    <script>
+        function login() {
+            let user = document.getElementById("username").value;
+            let pass = document.getElementById("password").value;
+            
+            if (user === "admin" && pass === "1234") { // Cambia por autenticación real
+                document.getElementById("busqueda").style.display = "block";
+            } else {
+                alert("Credenciales incorrectas.");
+            }
+        }
+
+        function buscar() {
+            let sku = document.getElementById("sku").value;
+            let bucketUrl = "https://storage.googleapis.com/deprisa-cloud/";
+            let resultados = document.getElementById("resultados");
+            resultados.innerHTML = `<img src="${bucketUrl}${sku}_TipoIMG.jpg" width="200">`;
+        }
+    </script>
+</body>
+</html>
