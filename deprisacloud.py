@@ -1,21 +1,42 @@
 import os
+import json
+from cryptography.fernet import Fernet
 from google.cloud import storage
+from io import BytesIO
 
-# Configuración
-CARPETA_LOCAL = "images"  # Cambia esto a la carpeta de imágenes
-BUCKET_NAME = "deprisa-cloud"
-CREDENTIALS_JSON = "deprisa-subida.json"  # Archivo de credenciales descargado
+# Obtener la clave encriptada desde las variables de entorno
+clave_encriptada = os.getenv("GCS_SECRET_KEY")
 
-# Autenticación en Google Cloud
-storage_client = storage.Client.from_service_account_json(CREDENTIALS_JSON)
-bucket = storage_client.bucket(BUCKET_NAME)
+if not clave_encriptada:
+    raise ValueError("Clave secreta no encontrada. Configúrala en las variables de entorno.")
+
+# Convertir la clave en bytes y desencriptar
+clave_bytes = clave_encriptada.encode()
+f = Fernet(clave_bytes)
+try: 
+    datos_encriptados = b"gAAAAABnxx5i-v18gVDRxaeJrPgbPVsb85qovKOn-EXEhIj36JFGSqg02nw8nYUhKG2cAb5zTj80t_wTj-LGntaVOMkEgAJ3AjXJiGwp41dL4-RYtvFtxDBHn41QrDf_1jRJxKht74P4cd8Yf_l2Fqsk12wcuPyRSx5YcO15uNxSjuMaYMB-dl6aHSHjsM31sGzMriWdrA6neRNXFAPw-dKBYW7hHlNVp0e_XtziBgtieku90h1wtLssFMN8iy2s8TvK7F8A8rhiUNtTxPfB9b8wggVdvWVJeF0HFm-p52OXfFpuNUW4UJZOOaOQ4kIIZCnpQuQxfkozdzzM54-JcuqiswAak6eWrQ4vgzw4gmevoX7T3NnxxgKVUoc9I1gXq0DFMiWjB8J4p8C-XqO4c6MqbPrDTEPgSdb4zTUCKXCwJeMRfmW_WmWqvy59IE7W_uRN7lzfNTG3LHgy81CbgZ60mY5J236YP_XlkSi4xmIV2TTfFPsFjcoDuCGWQVb9EMwsuSmAHNAJVuA8KtpC-r1IaVhfgBakB56XilEpwIgjD1QMTDJmSMDjmY_XHKwfK7eOYenmGAK_BeDsb-VmVuDhcDKLt0ysmaFp0GrOkakYaJgXYxKC8-Ell9BIxamZjd8wvWiQv6FAqCe1IDISUP57H1cgcmbJ5RnUngBWRXu9tSdIqsnog2vCnpRtxIcFHMekUxFVhLMJBF1-23CcuGolSmWy440NxyDD229el1IP8mYO8uw5QVRwkW7CKEgjHvjs2epPrUIM9WmQaeypvxvIQ6KFEKtJzx1kIk-rNcvSzSFMxWC9xWCIw0E5KxvA2INAjmBMeIS38DZKY7qyqgzAmUOW1GIM218_fi0h8N-bmy7ep9ahIRl15rmczbLX6hB81nFMdKJ7w7bZ3b0GNkurwB0hkfPwc1vYWE-Rjna4ynlVIcocfOocyw-c8VqeTeYsWA-15QtzYDd_yHs2UDhv6aFsBWU-FwFxE8BZqmoT4LCcXjaRuN9_PzNX2lR6pIxCUw3J-7U8BpgLSZy8CJYBrMhVWD9_L6rZEvzBhv5Au9yDE1Fvfo06-BsmvmpndEECZKTnGHBt4SSZcvS0CacdhneZha99fCRkq2weKc_guR_2hztnU2hyOCr7-ePXl1kjrDOuf8ks-uclBOqkYRXAvrZBlZdRi2Od5ifR56zQ-0earb06CHsD42eFXb_U06fngIm71evETI6FTTtPlKNUwv9JChCjwlrGJlBu9ZAzzy6H8G1-4aeFBlpKsl-oOkevw2UpymVMDwIzABDwGCKwzwfb3QMS4Idy1rTiAUoLg9K3Iaj2em16QNC0tuBY2baCyJ57p3N2KmhahL8ORTD3v1taiA3c2mJJ4L2uc9AVBAWYYDfAyDCel-dx7n9-b5IsLbSyCv3XrPf8GvpESSDy9X5p-93aAsXOkdZ7ogEEv8JimYjISbACnSkAPg6yAN-n2gK3dwGYRlH5nfkZ-PZP1l6K1zoJZ9ZaUEtEutJQKpD4h9ecT3UeRJqe0d8mywuVlz3DNJzRg5gx2O19MDrv59zvG-p0CvDP_OD6IiYtndJdqDqLOG-7Pmc-w-PS3fqmRkVTd4TtgxVBNTQKwBXbE19FN9gclJKcNvojvEMlj5Uj8o8pFpQbdMFymA8w_5zrATw8-vRhj0W-FgBWMXa8cf-dIFd9n3Gx8AqqzlVY-r_bVz5x_o0M4h1E0GVpoFKGqI5fjN1kIXMuQrdGa-yP99kpY6PW0BT-DR1ctoEQmpZVvOLd48a5sDESPMMOOTew32UKNRi724k5qmcZbin5tcW9Baa2RIA_eRPAxoYNSMOtcWElU4kzKlo_TxqWOdVehItBN3X9fQl8GxjSTTsbvDzHVz8riTDaxq6_gD0VJwjZaetixmMOKkOJrbdSpiuiIp6EqIHyZgjs5Cqpuzd_chXSClA0EUGzm7C61N7kSgGGiUPqwE17N18TH0zY3KqasP35__QiloPxZdwZFOba9uLvZWybCwZ5isim9fa5lzvLtxQTrva3cbnLrOjyDyS4Al37RCT-gQSdYeuEwrEZXKfZoXAd74IEZbHH8Y-U3a6dkMLw6IH3uwN-pcx93BRnMUmrDU4EoPkXnjQqcXR9tdap43hWfr6GrTjWyzFb6Z0diRwgF3ceHGw2dhZv7wtuYjY3EJrEyfHXi3FtrJHK7W1NKb1uCMOJEjNplN_2g8GrN6v5ji9PPHqReNfNwRMOIxAiCDdbbj48dV-l7sgbEmKbOn4Tvc7yT0ww4EC6sXrzX_U59uPYjxFxb9bHAhVAaPR1o6rLYa7yP2fXphgfyZYKVJWQVuNEDTFX4_S1FWjehvlmYoRKZJy7Go89TZfJiS_x90ny5OTgd1BjVmtfJcbdyJ9tJFYinZ1ExMegic7zU2ei4NgEcrPv47HvwXIsI6Q7Pu1HNWE3ljinPy56jJBiZaVfaF62G3bn1dO0J9gmucRs5AkVxQQR_KlbTzlHZ3G4FCl46PO_Ajg1REjFxrX85dyqgN8q9Ummh2YjJ0-kiwvM8aFDoqqbravWviWVyRwTyt_33s9gPSnlZzs67SlKmWjwodNWD0-zyaMe90JmPno1m4MHapaafYVOEwFkF_uGQ749l-3qCV9B8BBUNzUdZQC_ejILb0IBqwdhMvDjKxY2rd5HYGAlKxjAPagMtT4Y3av0F4pS51dq0oheYccSOYQG_MLQJr9jh9gqRfyFUOSAmEct0cF4doj15hBUsuRC8pECkMyzO30TYXy8pKUthZmKPT-DguxPF-NMMeggTcic7ho3oOc5Os17lraeeszceCPywR8GxwsL3znPxoyaqX9PAT83kh8NKfs_vwwpJrTlWaLX16_jbUph2DyYPdmgJUrkRx0t1naYD0WC7vviZkJEhJxYNIlvkPvbGJ50J_zV6hmuvh2O4NM8nQPfHdQgxtmyrG8H_Orcsdjl2ootUqz1TLxQgSHJgBygmi8p9Pz6Z_FbUJppcwxqc5K_N_XleWA7tH2FX-nwzJoK28FVGjngkIaKLQDrMRh4jxDS0mjz6bh5ZuaZ3otXyF1Jo845QsLnE3Aa8hhHis7lbFtgzErXRbrth-sd0snodt52ehpaPN10yc6bXaQJST9ASK7-YAenfrUFjiwjC5BHdwrrONum0mAQxRyLGwVbFhFbCKcSRWQmpI4oQyS3LNDDH42N51MH88U8zqvYe_Bwv1d54u_vKriUfzv8zg-1uomHScafeR3rsDijcKR2ty-GgDeQ7rvk"
+
+    datos_desencriptados = f.decrypt(datos_encriptados)
+    credenciales_dict = json.loads(datos_desencriptados.decode())  # Cargar como diccionario
+
+    print("✅ Credenciales desencriptadas en memoria.")
+
+except Exception as e:
+    raise RuntimeError("Error al desencriptar las credenciales") from e
+
+# Crear cliente de Google Cloud Storage sin archivo .json
+storage_client = storage.Client.from_service_account_info(credenciales_dict)
+bucket = storage_client.bucket("deprisa-cloud")
 
 def subir_imagenes():
+    CARPETA_LOCAL = "images"
+
     for archivo in os.listdir(CARPETA_LOCAL):
         if archivo.endswith(".jpg"):
             blob = bucket.blob(archivo)
             blob.upload_from_filename(os.path.join(CARPETA_LOCAL, archivo))
             print(f"Subido: {archivo}")
+            os.remove(os.path.join("images", archivo))  # Elimina la imagen después de subirla
 
 if __name__ == "__main__":
     subir_imagenes()
