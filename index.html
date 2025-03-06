@@ -3,39 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscar Imágenes en GCS</title>
-</head>
-<body>
-    <h2>Iniciar Sesión</h2>
-    <input type="text" id="username" placeholder="Usuario">
-    <input type="password" id="password" placeholder="Contraseña">
-    <button onclick="login()">Entrar</button>
-
-    <div id="busqueda" style="display:none;">
-        <h2>Buscar Imagen</h2>
-        <input type="text" id="sku" placeholder="Ingrese SKU">
-        <button onclick="buscar()">Buscar</button>
-        <div id="resultados"></div>
-    </div>
-
+    <title>Cloud Storage Viewer</title>
     <script>
-        function login() {
-            let user = document.getElementById("username").value;
-            let pass = document.getElementById("password").value;
-            
-            if (user === "admin" && pass === "1234") { // Cambia por autenticación real
-                document.getElementById("busqueda").style.display = "block";
-            } else {
-                alert("Credenciales incorrectas.");
+        const backendUrl = 'https://fastapi-backend-201226788937.us-central1.run.app';
+
+        async function searchImages(event) {
+            event.preventDefault();
+            const sku = document.getElementById('sku').value;
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.textContent = ''; // Clear previous error message
+            try {
+                console.log(`Sending search request to ${backendUrl}/search/${sku}`);
+                const response = await fetch(`${backendUrl}/search/${sku}`);
+                const data = await response.json();
+                console.log(data);
+                const results = document.getElementById('results');
+                results.innerHTML = '';
+                if (response.ok) {
+                    if (data.images) {
+                        data.images.forEach(image => {
+                            const img = document.createElement('img');
+                            img.src = image;
+                            img.alt = 'Imagen';
+                            img.style.width = '200px';
+                            results.appendChild(img);
+                        });
+                    } else {
+                        results.innerHTML = 'No se encontraron imágenes.';
+                    }
+                } else {
+                    errorMessage.textContent = 'Error al buscar imágenes: ' + data.detail;
+                }
+            } catch (error) {
+                console.error('Error during image search:', error);
+                errorMessage.textContent = 'Error de conexión: ' + error.message;
             }
         }
-
-        function buscar() {
-            let sku = document.getElementById("sku").value;
-            let bucketUrl = "https://storage.googleapis.com/deprisa-cloud/";
-            let resultados = document.getElementById("resultados");
-            resultados.innerHTML = `<img src="${bucketUrl}${sku}_TipoIMG.jpg" width="200">`;
-        }
     </script>
+</head>
+<body>
+    <h1>Cloud Storage Viewer</h1>
+    <div id="error-message" style="color: red;"></div>
+    <form id="search-form" onsubmit="searchImages(event)">
+        <label for="sku">Buscar por SKU:</label>
+        <input type="text" id="sku" name="sku" required>
+        <br>
+        <button type="submit">Buscar</button>
+    </form>
+    <div id="results"></div>
 </body>
 </html>

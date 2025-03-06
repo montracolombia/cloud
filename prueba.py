@@ -14,7 +14,7 @@ clave_bytes = clave_encriptada.encode()
 f = Fernet(clave_bytes)
 
 try:
-    with open("temp_gcs_credentials.json", "rb") as file:
+    with open("deprisa-subida.json", "rb") as file:
         datos_encriptados = file.read()
 
     datos_desencriptados = f.decrypt(datos_encriptados)
@@ -22,7 +22,7 @@ try:
     # Verificar el contenido antes de escribirlo
     print("Contenido desencriptado:", datos_desencriptados.decode())
 
-    with open("temp_gcs_credentials.json", "wb") as file:
+    with open("deprisa.json", "wb") as file:
         file.write(datos_desencriptados)
 
     print("Archivo JSON de credenciales desencriptado correctamente.")
