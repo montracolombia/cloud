@@ -1,55 +1,55 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Storage Viewer</title>
-    <script>
-        const backendUrl = 'https://fastapi-backend-201226788937.us-central1.run.app';
+<script>
+    const backendUrl = 'https://fastapi-backend-201226788937.us-central1.run.app';
 
-        async function searchImages(event) {
-            event.preventDefault();
-            const sku = document.getElementById('sku').value;
-            const errorMessage = document.getElementById('error-message');
-            errorMessage.textContent = ''; // Clear previous error message
-            try {
-                console.log(`Sending search request to ${backendUrl}/search/${sku}`);
-                const response = await fetch(`${backendUrl}/search/${sku}`);
-                const data = await response.json();
-                console.log(data);
-                const results = document.getElementById('results');
-                results.innerHTML = '';
-                if (response.ok) {
-                    if (data.images) {
-                        data.images.forEach(image => {
-                            const img = document.createElement('img');
-                            img.src = image;
-                            img.alt = 'Imagen';
-                            img.style.width = '200px';
-                            results.appendChild(img);
-                        });
-                    } else {
-                        results.innerHTML = 'No se encontraron imágenes.';
-                    }
+    async function searchImages(event) {
+        event.preventDefault();
+        const sku = document.getElementById('sku').value;
+        const errorMessage = document.getElementById('error-message');
+        const results = document.getElementById('results');
+        errorMessage.textContent = ''; // Limpiar mensaje de error
+        results.innerHTML = ''; // Limpiar resultados anteriores
+
+        try {
+            console.log(`Sending search request to ${backendUrl}/search/${sku}`);
+            const response = await fetch(`${backendUrl}/search/${sku}`);
+            const data = await response.json();
+
+            if (response.ok) {
+                if (data.images.length > 0) {
+                    data.images.forEach(imageUrl => {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = 'Imagen';
+                        img.style.width = '200px';
+                        img.style.cursor = 'pointer';
+                        img.onclick = () => downloadImage(imageUrl); // Click para descargar
+                        results.appendChild(img);
+                    });
                 } else {
-                    errorMessage.textContent = 'Error al buscar imágenes: ' + data.detail;
+                    results.innerHTML = '<p>No se encontraron imágenes.</p>';
                 }
-            } catch (error) {
-                console.error('Error during image search:', error);
-                errorMessage.textContent = 'Error de conexión: ' + error.message;
+            } else {
+                errorMessage.textContent = 'Error al buscar imágenes: ' + data.detail;
             }
+        } catch (error) {
+            console.error('Error during image search:', error);
+            errorMessage.textContent = 'Error de conexión: ' + error.message;
         }
-    </script>
-</head>
-<body>
-    <h1>Cloud Storage Viewer</h1>
-    <div id="error-message" style="color: red;"></div>
-    <form id="search-form" onsubmit="searchImages(event)">
-        <label for="sku">Buscar por SKU:</label>
-        <input type="text" id="sku" name="sku" required>
-        <br>
-        <button type="submit">Buscar</button>
-    </form>
-    <div id="results"></div>
-</body>
-</html>
+    }
+
+    async function downloadImage(imageUrl) {
+        const imageName = imageUrl.split('/').pop(); // Extraer nombre del archivo
+        try {
+            const response = await fetch(`${backendUrl}/download/${imageName}`);
+            const data = await response.json();
+
+            if (response.ok) {
+                window.open(data.download_url, '_blank'); // Abrir la URL firmada en una nueva pestaña
+            } else {
+                alert('Error al generar el link de descarga: ' + data.detail);
+            }
+        } catch (error) {
+            alert('Error de conexión: ' + error.message);
+        }
+    }
+</script>

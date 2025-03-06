@@ -32,9 +32,9 @@ app = FastAPI()
 origins = [
     "http://localhost",
     "http://localhost:8000",
-    "http://127.0.0.1:5500"
+    "http://127.0.0.1:5500",
     "https://fastapi-backend-201226788937.us-central1.run.app",
-    "https://montracolombia.github.io/cloud/"  # Reemplaza con el dominio de tu frontend
+    "https://montracolombia.github.io"
 ]
 
 app.add_middleware(
