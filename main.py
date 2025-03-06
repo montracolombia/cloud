@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import storage
 from google.oauth2 import service_account
 import os
@@ -26,6 +27,23 @@ bucket = client.bucket(bucket_name)
 print("✅ Google Cloud Storage Client Configurado Correctamente en Memoria")
 
 app = FastAPI()
+
+# Configuración de CORS
+origins = [
+    "http://localhost",
+    "http://localhost:8000",
+    "http://127.0.0.1:5500"
+    "https://fastapi-backend-201226788937.us-central1.run.app",
+    "https://montracolombia.github.io/cloud/"  # Reemplaza con el dominio de tu frontend
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Búsqueda de imágenes por SKU
 @app.get("/search/{sku}")
