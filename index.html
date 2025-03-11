@@ -3,7 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Storage Viewer</title>
+    <title>Consulta Guías</title>
+    <style>
+        :root {
+            --primary: #241e7e; /* Azul de Deprisa */
+            --secondary: #1a1660; /* Azul Deprisa más oscuro */
+            --light: #f8f9fa;
+            --dark: #212529;
+            --accent: #e91f26; /* Rojo del triángulo de Deprisa */
+            --danger: #e91f26;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .header h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+        
+        .logos-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+        
+        .logo-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 70px;
+        }
+        
+        .logo {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        
+        .footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .footer span {
+            margin: 0 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ced4da;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(36, 30, 126, 0.25);
+        }
+        
+        button {
+            cursor: pointer;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        button.logout {
+            background-color: #6c757d;
+        }
+        
+        button.logout:hover {
+            background-color: #5a6268;
+        }
+        
+        #error-message {
+            color: var(--danger);
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
+            background-color: rgba(233, 31, 38, 0.1);
+            display: none;
+        }
+        
+        #error-message:not(:empty) {
+            display: block;
+        }
+        
+        #results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        #results img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+        
+        #results img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .empty-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+        }
+        
+        .buttons-container {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .card {
+                padding: 20px;
+            }
+            
+            .logos-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .logo-wrapper {
+                width: 80%;
+                margin: 0 auto;
+            }
+            
+            #results {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+    </style>
     <script>
         const backendUrl = 'https://fastapi-backend-201226788937.us-central1.run.app';
         let token = '';
@@ -43,6 +255,10 @@
 
         async function logout() {
             token = '';
+            // Limpiar los campos de usuario y contraseña
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            // Mostrar el formulario de login y ocultar el de búsqueda
             document.getElementById('login-form').style.display = 'block';
             document.getElementById('search-form').style.display = 'none';
             document.getElementById('results').innerHTML = '';
@@ -51,14 +267,32 @@
         async function searchImages(event) {
             event.preventDefault();
             const sku = document.getElementById('sku').value;
+            const startDate = document.getElementById('start-date').value.replace(/-/g, ''); // Convertir fecha a formato yyyymmdd
+            const endDate = document.getElementById('end-date').value.replace(/-/g, ''); // Convertir fecha a formato yyyymmdd
             const errorMessage = document.getElementById('error-message');
             const results = document.getElementById('results');
             errorMessage.textContent = ''; // Limpiar mensaje de error
             results.innerHTML = ''; // Limpiar resultados anteriores
-    
+
+            if ((startDate && !endDate) || (!startDate && endDate)) {
+                errorMessage.textContent = 'Debe seleccionar ambas fechas si selecciona una de ellas.';
+                return;
+            }
+
             try {
-                console.log(`Sending search request to ${backendUrl}/search/${sku}`);
-                const response = await fetch(`${backendUrl}/search/${sku}`, {
+                let url = '';
+                if (sku && startDate && endDate) {
+                    url = `${backendUrl}/search_by_sku_and_date/${sku}?start_date=${startDate}&end_date=${endDate}`;
+                } else if (sku) {
+                    url = `${backendUrl}/search_by_sku/${sku}`;
+                } else if (startDate && endDate) {
+                    url = `${backendUrl}/search_by_date?start_date=${startDate}&end_date=${endDate}`;
+                } else {
+                    errorMessage.textContent = 'Debe ingresar un SKU o un rango de fechas.';
+                    return;
+                }
+                console.log(`Sending search request to ${url}`);
+                const response = await fetch(url, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     },
@@ -71,14 +305,18 @@
                             const img = document.createElement('img');
                             img.src = imageUrl;
                             img.alt = 'Imagen';
-                            img.style.width = '200px';
                             img.style.cursor = 'pointer';
-                            img.onclick = () => downloadImage(imageUrl); // Click para descargar 2
+                            img.onclick = () => downloadImage(imageUrl); // Click para descargar
                             results.appendChild(img);
                         });
                     } else {
-                        results.innerHTML = '<p>No se encontraron imágenes.</p>';
+                        results.innerHTML = '<div class="empty-results"><p>No se encontraron imágenes.</p></div>';
                     }
+                    // Limpiar campos después de la búsqueda exitosa
+                    document.getElementById('sku').value = '';
+                    document.getElementById('start-date').value = '';
+                    document.getElementById('end-date').value = '';
+                    validateDates(); // Asegurarse de que los campos no sean obligatorios después de limpiar
                 } else {
                     errorMessage.textContent = 'Error al buscar imágenes: ' + data.detail;
                 }
@@ -110,24 +348,76 @@
     </script>
 </head>
 <body>
-    <h1>Cloud Storage Viewer</h1>
-    <div id="error-message" style="color: red;"></div>
-    <form id="login-form" onsubmit="login(event)">
-        <label for="username">Usuario:</label>
-        <input type="text" id="username" name="username" required>
-        <br>
-        <label for="password">Contraseña:</label>
-        <input type="password" id="password" name="password" required>
-        <br>
-        <button type="submit">Iniciar Sesión</button>
-    </form>
-    <form id="search-form" onsubmit="searchImages(event)" style="display: none;">
-        <label for="sku">Buscar por SKU:</label>
-        <input type="text" id="sku" name="sku" required>
-        <br>
-        <button type="submit">Buscar</button>
-        <button type="button" onclick="logout()">Cerrar Sesión</button>
-    </form>
-    <div id="results"></div>
+    <div class="container">
+        <div class="logos-container">
+            <div class="logo-wrapper">
+                <img src="https://montrasolutions.com/montra/public/images/logo-montra.png" alt="Logo Montra" class="logo">
+            </div>
+            <div class="logo-wrapper">
+                <img src="https://www.lacasadelatos.com.co/wp-content/uploads/2016/06/deprisa.png" alt="Logo Deprisa" class="logo">
+            </div>
+        </div>
+        
+        <div class="header">
+            <h1>Consulta Guías</h1>
+            <p>Sistema de visualización y descarga de imágenes</p>
+        </div>
+        
+        <div id="error-message"></div>
+        
+        <div class="card" id="login-form">
+            <form onsubmit="login(event)">
+                <div class="form-group">
+                    <label for="username">Usuario:</label>
+                    <input type="text" id="username" name="username" required placeholder="Ingrese su nombre de usuario">
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" name="password" required placeholder="Ingrese su contraseña">
+                </div>
+                <div class="buttons-container">
+                    <button type="submit">Iniciar Sesión</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="card" id="search-form" style="display: none;">
+            <form onsubmit="searchImages(event)">
+                <div class="form-group">
+                    <label for="sku">Buscar por SKU:</label>
+                    <input type="text" id="sku" name="sku" placeholder="Ingrese el código SKU">
+                </div>
+                <div class="form-group">
+                    <label for="start-date">Fecha de inicio (opcional):</label>
+                    <input type="date" id="start-date" name="start-date" placeholder="Seleccione una fecha de inicio" onchange="validateDates()">
+                </div>
+                <div class="form-group">
+                    <label for="end-date">Fecha de fin (opcional):</label>
+                    <input type="date" id="end-date" name="end-date" placeholder="Seleccione una fecha de fin" onchange="validateDates()">
+                </div>
+                <div class="buttons-container">
+                    <button type="submit">Buscar</button>
+                    <button type="button" class="logout" onclick="logout()">Cerrar Sesión</button>
+                </div>
+            </form>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+    <script>
+        function validateDates() {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            if (startDate || endDate) {
+                startDateInput.required = true;
+                endDateInput.required = true;
+            } else {
+                startDateInput.required = false;
+                endDateInput.required = false;
+            }
+        }
+    </script>
 </body>
 </html>
