@@ -195,6 +195,11 @@
             justify-content: flex-start;
             margin-top: 20px;
         }
+
+        .date-container {
+            display: flex;
+            gap: 20px;
+        }
         
         @media (max-width: 768px) {
             .card {
@@ -213,6 +218,10 @@
             
             #results {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .date-container {
+                flex-direction: column;
             }
         }
     </style>
@@ -317,6 +326,7 @@
                     document.getElementById('start-date').value = '';
                     document.getElementById('end-date').value = '';
                     validateDates(); // Asegurarse de que los campos no sean obligatorios después de limpiar
+                    scrollToResults(); // Desplazar la pantalla hacia abajo para ver los resultados
                 } else {
                     errorMessage.textContent = 'Error al buscar imágenes: ' + data.detail;
                 }
@@ -344,6 +354,11 @@
             } catch (error) {
                 alert('Error de conexión: ' + error.message);
             }
+        }
+
+        function scrollToResults() {
+            const results = document.getElementById('results');
+            results.scrollIntoView({ behavior: 'smooth' });
         }
     </script>
 </head>
@@ -387,13 +402,15 @@
                     <label for="sku">Buscar por SKU:</label>
                     <input type="text" id="sku" name="sku" placeholder="Ingrese el código SKU">
                 </div>
-                <div class="form-group">
-                    <label for="start-date">Fecha de inicio (opcional):</label>
-                    <input type="date" id="start-date" name="start-date" placeholder="Seleccione una fecha de inicio" onchange="validateDates()">
-                </div>
-                <div class="form-group">
-                    <label for="end-date">Fecha de fin (opcional):</label>
-                    <input type="date" id="end-date" name="end-date" placeholder="Seleccione una fecha de fin" onchange="validateDates()">
+                <div class="date-container">
+                    <div class="form-group">
+                        <label for="start-date">Fecha de inicio (opcional):</label>
+                        <input type="date" id="start-date" name="start-date" placeholder="Seleccione una fecha de inicio" onchange="validateDates()">
+                    </div>
+                    <div class="form-group">
+                        <label for="end-date">Fecha de fin (opcional):</label>
+                        <input type="date" id="end-date" name="end-date" placeholder="Seleccione una fecha de fin" onchange="validateDates()">
+                    </div>
                 </div>
                 <div class="buttons-container">
                     <button type="submit">Buscar</button>
