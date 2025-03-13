@@ -124,6 +124,19 @@
             box-shadow: 0 0 0 3px rgba(36, 30, 126, 0.25);
         }
         
+        /* Nuevo: contenedor flexible para campos de fecha */
+        .date-fields-container {
+            display: flex;
+            gap: 20px;
+            border: 1px solid #ced4da;
+            border-radius: var(--border-radius);
+            padding: 10px;
+        }
+        
+        .date-fields-container .form-group {
+            flex: 1;
+        }
+        
         button {
             cursor: pointer;
             background-color: var(--primary);
@@ -187,6 +200,12 @@
             .logo-wrapper {
                 width: 80%;
                 margin: 0 auto;
+            }
+            
+            /* Cambiar campos de fecha a modo vertical en móviles */
+            .date-fields-container {
+                flex-direction: column;
+                gap: 10px; /* Reducir el espacio entre los campos */
             }
         }
         
@@ -469,14 +488,19 @@
                     <label for="sku">Buscar por SKU:</label>
                     <input type="text" id="sku" name="sku" placeholder="Ingrese el código SKU">
                 </div>
-                <div class="form-group">
-                    <label for="start-date">Fecha de inicio (opcional):</label>
-                    <input type="date" id="start-date" name="start-date" placeholder="Seleccione una fecha de inicio" onchange="validateDates()">
+                
+                <!-- Contenedor flexible para campos de fecha -->
+                <div class="date-fields-container">
+                    <div class="form-group">
+                        <label for="start-date">Fecha de inicio (opcional):</label>
+                        <input type="date" id="start-date" name="start-date" placeholder="Seleccione una fecha de inicio" onchange="validateDates()">
+                    </div>
+                    <div class="form-group">
+                        <label for="end-date">Fecha de fin (opcional):</label>
+                        <input type="date" id="end-date" name="end-date" placeholder="Seleccione una fecha de fin" onchange="validateDates()">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="end-date">Fecha de fin (opcional):</label>
-                    <input type="date" id="end-date" name="end-date" placeholder="Seleccione una fecha de fin" onchange="validateDates()">
-                </div>
+                
                 <div class="buttons-container">
                     <button type="submit">Buscar</button>
                     <button type="button" class="logout" onclick="logout()">Cerrar Sesión</button>
