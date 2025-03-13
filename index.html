@@ -44,6 +44,7 @@
             padding: 30px;
             margin-bottom: 20px;
             transition: var(--transition);
+            width: 100%; /* Asegurar que la tarjeta ocupe todo el ancho disponible */
         }
         
         .header {
@@ -163,42 +164,14 @@
         }
         
         #results {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
+            width: 100%; /* Asegurar que los resultados ocupen todo el ancho */
             margin-top: 30px;
-        }
-        
-        #results img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            transition: var(--transition);
-        }
-        
-        #results img:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-        
-        .empty-results {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 30px;
-            color: #6c757d;
         }
         
         .buttons-container {
             display: flex;
             justify-content: flex-start;
             margin-top: 20px;
-        }
-
-        .date-container {
-            display: flex;
-            gap: 20px;
         }
         
         @media (max-width: 768px) {
@@ -215,14 +188,85 @@
                 width: 80%;
                 margin: 0 auto;
             }
-            
-            #results {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            }
-
-            .date-container {
-                flex-direction: column;
-            }
+        }
+        
+        /* Estilos modernos para la tabla de resultados */
+        .table-container {
+            width: 100%; /* Ocupar todo el ancho disponible */
+            max-height: 70vh;
+            overflow-y: auto;
+            border-radius: var(--border-radius);
+            margin-top: 0;
+            box-shadow: var(--box-shadow);
+            background-color: white;
+        }
+        
+        #results table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            margin-top: 0;
+            background-color: white;
+        }
+        
+        #results th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            padding: 12px 15px;
+            position: sticky;
+            top: 0;
+        }
+        
+        #results td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: middle;
+        }
+        
+        #results tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        #results tbody tr:hover {
+            background-color: rgba(36, 30, 126, 0.05);
+        }
+        
+        #results img {
+            width: 80px;
+            height: auto;
+            border-radius: 4px;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        
+        #results img:hover {
+            transform: scale(1.8);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Distribución de ancho de columnas */
+        #results th:nth-child(1) { width: 15%; }
+        #results th:nth-child(2) { width: 10%; }
+        #results th:nth-child(3) { width: 10%; }
+        #results th:nth-child(4) { width: 10%; }
+        #results th:nth-child(5) { width: 10%; }
+        #results th:nth-child(6) { width: 15%; }
+        #results th:nth-child(7) { width: 15%; }
+        #results th:nth-child(8) { width: 15%; }
+        
+        .empty-results {
+            width: 100%;
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
         }
     </style>
     <script>
@@ -276,8 +320,8 @@
         async function searchImages(event) {
             event.preventDefault();
             const sku = document.getElementById('sku').value;
-            const startDate = document.getElementById('start-date').value.replace(/-/g, ''); // Convertir fecha a formato yyyymmdd
-            const endDate = document.getElementById('end-date').value.replace(/-/g, ''); // Convertir fecha a formato yyyymmdd
+            const startDate = document.getElementById('start-date').value.split('-').reverse().join('/'); // Convertir fecha a formato dd/mm/yyyy
+            const endDate = document.getElementById('end-date').value.split('-').reverse().join('/'); // Convertir fecha a formato dd/mm/yyyy
             const errorMessage = document.getElementById('error-message');
             const results = document.getElementById('results');
             errorMessage.textContent = ''; // Limpiar mensaje de error
@@ -309,29 +353,57 @@
                 const data = await response.json();
     
                 if (response.ok) {
-                    if (data.images.length > 0) {
-                        data.images.forEach(imageUrl => {
-                            const img = document.createElement('img');
-                            img.src = imageUrl;
-                            img.alt = 'Imagen';
-                            img.style.cursor = 'pointer';
-                            img.onclick = () => downloadImage(imageUrl); // Click para descargar
-                            results.appendChild(img);
+                    if (data.results && data.results.length > 0) {
+                        const tableContainer = document.createElement('div');
+                        tableContainer.className = 'table-container';
+                        
+                        const table = document.createElement('table');
+                        table.innerHTML = `
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Largo (cm)</th>
+                                    <th>Ancho (cm)</th>
+                                    <th>Alto (cm)</th>
+                                    <th>Peso (Kg)</th>
+                                    <th>Fecha</th>
+                                    <th>Equipo</th>
+                                    <th>Imagen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        `;
+                        data.results.forEach(item => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${item.code}</td>
+                                <td>${item.length}</td>
+                                <td>${item.width}</td>
+                                <td>${item.heigth}</td>
+                                <td>${item.weigth}</td>
+                                <td>${item.measure_date}</td>
+                                <td>${item.machine_pid}</td>
+                                <td><img src="${item.image_url}" alt="Imagen" onclick="downloadImage('${item.image_url}')"></td>
+                            `;
+                            table.querySelector('tbody').appendChild(row);
                         });
+                        
+                        tableContainer.appendChild(table);
+                        results.appendChild(tableContainer);
                     } else {
-                        results.innerHTML = '<div class="empty-results"><p>No se encontraron imágenes.</p></div>';
+                        results.innerHTML = '<div class="empty-results"><p>No se encontraron resultados.</p></div>';
                     }
                     // Limpiar campos después de la búsqueda exitosa
                     document.getElementById('sku').value = '';
                     document.getElementById('start-date').value = '';
                     document.getElementById('end-date').value = '';
                     validateDates(); // Asegurarse de que los campos no sean obligatorios después de limpiar
-                    scrollToResults(); // Desplazar la pantalla hacia abajo para ver los resultados
                 } else {
-                    errorMessage.textContent = 'Error al buscar imágenes: ' + data.detail;
+                    errorMessage.textContent = 'Error al buscar resultados: ' + data.detail;
                 }
             } catch (error) {
-                console.error('Error during image search:', error);
+                console.error('Error during search:', error);
                 errorMessage.textContent = 'Error de conexión: ' + error.message;
             }
         }
@@ -354,11 +426,6 @@
             } catch (error) {
                 alert('Error de conexión: ' + error.message);
             }
-        }
-
-        function scrollToResults() {
-            const results = document.getElementById('results');
-            results.scrollIntoView({ behavior: 'smooth' });
         }
     </script>
 </head>
@@ -402,15 +469,13 @@
                     <label for="sku">Buscar por SKU:</label>
                     <input type="text" id="sku" name="sku" placeholder="Ingrese el código SKU">
                 </div>
-                <div class="date-container">
-                    <div class="form-group">
-                        <label for="start-date">Fecha de inicio (opcional):</label>
-                        <input type="date" id="start-date" name="start-date" placeholder="Seleccione una fecha de inicio" onchange="validateDates()">
-                    </div>
-                    <div class="form-group">
-                        <label for="end-date">Fecha de fin (opcional):</label>
-                        <input type="date" id="end-date" name="end-date" placeholder="Seleccione una fecha de fin" onchange="validateDates()">
-                    </div>
+                <div class="form-group">
+                    <label for="start-date">Fecha de inicio (opcional):</label>
+                    <input type="date" id="start-date" name="start-date" placeholder="Seleccione una fecha de inicio" onchange="validateDates()">
+                </div>
+                <div class="form-group">
+                    <label for="end-date">Fecha de fin (opcional):</label>
+                    <input type="date" id="end-date" name="end-date" placeholder="Seleccione una fecha de fin" onchange="validateDates()">
                 </div>
                 <div class="buttons-container">
                     <button type="submit">Buscar</button>
