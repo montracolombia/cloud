@@ -4,139 +4,181 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consulta Guías</title>
+    <!-- Estilos CSS -->
     <style>
         :root {
-            --primary: #241e7e; /* Azul de Deprisa */
-            --secondary: #1a1660; /* Azul Deprisa más oscuro */
-            --light: #f8f9fa;
-            --dark: #212529;
-            --accent: #e91f26; /* Rojo del triángulo de Deprisa */
-            --danger: #e91f26;
+            --primary: #ff0000; /* Rojo brillante de Montra */
+            --secondary: #cc0000; /* Rojo más oscuro para hover */
+            --light: #ffffff;
+            --dark: #1a1a1a; /* Negro menos intenso */
+            --grey: #767676; /* Gris para elementos secundarios */
+            --light-grey: #e0e0e0; /* Gris claro para bordes y separadores */
+            --dark-grey: #333333; /* Gris oscuro para botones secundarios */
             --border-radius: 8px;
-            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
             --transition: all 0.3s ease;
+            --frame-height: 70px; /* Altura reducida para navbar y footer */
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
-            background-color: #f0f2f5;
-            color: var(--dark);
+            background-color: #f8f8f8; /* Fondo claro */
+            color: #333333;
             line-height: 1.6;
-            padding: 20px;
+            padding: 20px; /* Padding del body */
+            padding-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background-color: var(--dark);
+            color: var(--light);
+            padding: 10px 0;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            max-width: 1200px; /* Mismo ancho máximo que el content-wrapper */
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+            height: var(--frame-height);
         }
         
-        .container {
+        .navbar-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 0 !important;
+        }
+
+        .content-wrapper {
+            flex: 1;
+            padding: 20px;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            width: 100%;
         }
-        
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: auto; /* Sin altura mínima fija */
+        }
+
         .card {
-            background-color: white;
+            background-color: var(--light);
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
             padding: 30px;
             margin-bottom: 20px;
-            transition: var(--transition);
-            width: 100%; /* Asegurar que la tarjeta ocupe todo el ancho disponible */
+            border: 1px solid #ddd;
         }
-        
+
         .header {
             text-align: center;
             margin-bottom: 30px;
             position: relative;
+            color: var(--dark);
         }
-        
+
         .header h1 {
-            color: var(--primary);
+            color: var(--dark);
             font-size: 2.5rem;
             margin-bottom: 10px;
         }
-        
+
         .header p {
-            color: #6c757d;
+            color: #666;
             font-size: 1.1rem;
         }
-        
-        .logos-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 10px;
-        }
-        
+
         .logo-wrapper {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 70px;
+            height: 50px; /* Ajustado para que quede dentro del navbar */
         }
-        
+
         .logo {
             max-height: 100%;
             max-width: 100%;
             object-fit: contain;
         }
-        
+
         .footer {
+            text-align: center;
+            background-color: #1a1a1a; /* Negro menos intenso - igual que navbar */
+            color: var(--light);
+            height: var(--frame-height);
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: #6c757d;
+            width: 100%;
+            max-width: 1200px; /* Mismo ancho máximo que los demás elementos */
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 30px; /* Margen fijo desde el último elemento */
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
         }
-        
+
         .footer span {
             margin: 0 10px;
         }
-        
+
         .form-group {
             margin-bottom: 20px;
         }
-        
+
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #495057;
+            color: var(--dark);
         }
-        
+
         input {
             width: 100%;
             padding: 12px 15px;
-            border: 1px solid #ced4da;
+            border: 1px solid #ddd;
+            background-color: var(--light);
+            color: var(--dark);
             border-radius: var(--border-radius);
             font-size: 1rem;
             transition: var(--transition);
         }
-        
+
         input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(36, 30, 126, 0.25);
+            box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1);
         }
-        
+
         /* Nuevo: contenedor flexible para campos de fecha */
         .date-fields-container {
             display: flex;
             gap: 20px;
-            border: 1px solid #ced4da;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
             border-radius: var(--border-radius);
-            padding: 10px;
+            padding: 15px;
         }
-        
+
         .date-fields-container .form-group {
             flex: 1;
         }
-        
+
         button {
             cursor: pointer;
             background-color: var(--primary);
@@ -149,77 +191,79 @@
             transition: var(--transition);
             margin-right: 10px;
         }
-        
+
         button:hover {
             background-color: var(--secondary);
             transform: translateY(-2px);
         }
-        
+
+        button.accent {
+            background-color: var(--accent);
+        }
+
+        button.accent:hover {
+            background-color: #e67600; /* Naranja más oscuro */
+        }
+
         button.logout {
-            background-color: #6c757d;
+            background-color: var(--grey);
         }
-        
+
         button.logout:hover {
-            background-color: #5a6268;
+            background-color: #555;
         }
-        
+
         #error-message {
-            color: var(--danger);
+            color: var(--primary);
             padding: 10px;
             margin-bottom: 15px;
             border-radius: var(--border-radius);
-            background-color: rgba(233, 31, 38, 0.1);
+            background-color: rgba(255, 0, 0, 0.05);
+            border: 1px solid rgba(255, 0, 0, 0.2);
             display: none;
         }
-        
+
         #error-message:not(:empty) {
             display: block;
         }
-        
+
         #results {
             width: 100%; /* Asegurar que los resultados ocupen todo el ancho */
             margin-top: 30px;
         }
-        
+
         .buttons-container {
             display: flex;
             justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: 10px;
             margin-top: 20px;
         }
-        
+
         @media (max-width: 768px) {
             .card {
                 padding: 20px;
             }
-            
-            .logos-container {
-                flex-direction: column;
-                gap: 20px;
-            }
-            
-            .logo-wrapper {
-                width: 80%;
-                margin: 0 auto;
-            }
-            
+
             /* Cambiar campos de fecha a modo vertical en móviles */
             .date-fields-container {
                 flex-direction: column;
                 gap: 10px; /* Reducir el espacio entre los campos */
             }
         }
-        
+
         /* Estilos modernos para la tabla de resultados */
         .table-container {
             width: 100%; /* Ocupar todo el ancho disponible */
             max-height: 70vh;
             overflow-y: auto;
             border-radius: var(--border-radius);
-            margin-top: 0;
+            margin-top: 20px;
             box-shadow: var(--box-shadow);
-            background-color: white;
+            background-color: var(--light);
+            border: 1px solid #ddd;
         }
-        
+
         #results table {
             width: 100%;
             border-collapse: separate;
@@ -229,9 +273,9 @@
             margin-top: 0;
             background-color: white;
         }
-        
+
         #results th {
-            background-color: var(--primary);
+            background-color: #ff0000; /* Rojo brillante de Montra para encabezado */
             color: white;
             font-weight: 600;
             text-align: center;
@@ -239,22 +283,24 @@
             position: sticky;
             top: 0;
         }
-        
+
         #results td {
             padding: 12px 15px;
             text-align: center;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #ddd;
             vertical-align: middle;
+            color: var(--dark); /* Asegurar que el texto sea legible */
+            background-color: var(--light); /* Fondo más claro para las celdas */
         }
-        
+
         #results tbody tr:last-child td {
             border-bottom: none;
         }
-        
+
         #results tbody tr:hover {
-            background-color: rgba(36, 30, 126, 0.05);
+            background-color: #f5f5f5; /* Gris más oscuro para hover */
         }
-        
+
         #results img {
             width: 80px;
             height: auto;
@@ -262,12 +308,12 @@
             transition: transform 0.3s ease;
             cursor: pointer;
         }
-        
+
         #results img:hover {
             transform: scale(1.8);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
-        
+
         /* Distribución de ancho de columnas */
         #results th:nth-child(1) { width: 15%; }
         #results th:nth-child(2) { width: 10%; }
@@ -277,195 +323,473 @@
         #results th:nth-child(6) { width: 15%; }
         #results th:nth-child(7) { width: 15%; }
         #results th:nth-child(8) { width: 15%; }
-        
+
         .empty-results {
             width: 100%;
             text-align: center;
             padding: 30px;
-            color: #6c757d;
-            background-color: white;
+            color: #666;
+            background-color: var(--light);
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
         }
+
+        #user-info {
+            background-color: #f5f5f5;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+        }
+
+                /* Estilo para el selector de carpetas */
+        .folder-selection-wrapper {
+            background-color: #f8f8f8;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            border: 1px solid #ddd;
+        }
+
+        /* Ajustar estilo de checkbox */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        /* Estilos para el contenedor de nueva carpeta */
+        #new-folder-container {
+            background-color: rgba(255, 0, 0, 0.05);
+            padding: 10px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 0, 0, 0.2);
+        }
+
+        /* Hacer que el mensaje de error sea más visible */
+        #error-message {
+            border-left: 4px solid var(--primary);
+        }
+        
+        .expiration-normal {
+            color: #28a745;
+        }
+        
+        .expiration-warning {
+            color: #ffc107;
+        }
+        
+        .expiration-critical {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        /* Para administradores: Panel de gestión de usuarios */
+        .admin-panel {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+        }
+        
+        .user-list-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .user-list-table th, .user-list-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .user-list-table th {
+            background-color: #f2f2f2;
+        }
+        
+        /* Mejora en el espaciado de las imágenes */
+        #results img {
+            margin: 5px;
+            border: 1px solid #ddd;
+            padding: 3px;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        #results img:hover {
+            transform: scale(1.8);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            z-index: 10;
+            position: relative;
+        }
+        
+        /* Ajuste para pantallas pequeñas */
+        @media (max-width: 768px) {
+            #results img {
+                margin: 8px;
+                max-width: calc(100% - 16px);
+                padding: 4px;
+            }
+            
+            .table-container {
+                margin: 0px 5px;
+                width: calc(100% - 10px) !important;
+            }
+            
+            #results td {
+                padding: 8px 6px;
+            }
+        }
+        
+        /* Botón de administración */
+        #admin-button {
+            background-color: #2c3e50;
+        }
+        
+        #admin-button:hover {
+            background-color: #34495e;
+        }
+        
+        /* Estilo para el botón de configuración de campos */
+        #config-fields-button {
+            background-color: #2c3e50; /* Mismo color que el botón de administración */
+        }
+        
+        #config-fields-button:hover {
+            background-color: #34495e;
+        }
+        
+        /* Ajustar tabla responsive */
+        .table-container {
+            overflow-x: auto;
+            max-width: 100%;
+            margin-bottom: 20px;
+        }
+
+        /* Estilos para el contenedor de contraseña y checkbox */
+        .password-container {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .checkbox-container input {
+            width: auto;
+            margin-right: 5px;
+        }
+
+        .password-hint {
+            display: block;
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Estilos para acciones en tabla de usuarios */
+        .action-btn {
+            padding: 5px 10px;
+            margin-right: 5px;
+            font-size: 0.9rem;
+        }
+
+        .action-btn.delete {
+            background-color: #dc3545;
+        }
+
+        .action-btn.delete:hover {
+            background-color: #bd2130;
+        }
+
+        /* Estilos para formularios de usuario */
+        .user-form {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+        }
+
+        .form-title {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            color: var(--dark);
+        }
+
+        /* Clases de utilidad */
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        /* Estilos para el indicador de carga */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s linear;
+        }
+
+        .loading-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 5px solid var(--primary);
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            animation: rotate 1s linear infinite;
+        }
+
+        .loading-text {
+            position: absolute;
+            bottom: -30px;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Estilos para selects */
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            background-color: var(--light);
+            color: var(--dark);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1);
+        }
+
+        /* Estilos adicionales para el panel de configuración de campos */
+        #client-config-panel {
+            display: flex;
+            flex-direction: column;
+            min-height: auto; /* Sin altura mínima fija */
+            margin-bottom: 20px;
+        }
+
+        /* Para pantallas muy pequeñas, reducir los márgenes */
+        @media (max-height: 600px) {
+            .footer {
+                margin-top: 20px;
+                margin-bottom: 10px;
+            }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        
+
+
+    /* Estilos actualizados para el modal personalizado */
+    .custom-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.3s;
+    }
+
+    .modal-content {
+        background-color: var(--light);
+        margin: 15% auto;
+        padding: 0;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        width: 90%;
+        max-width: 500px;
+        animation: slideDown 0.3s;
+    }
+
+    /* Actualización del estilo del encabezado del modal */
+    .modal-header {
+        padding: 15px 20px;
+        background-color: var(--dark); /* Cambiado de var(--primary) a var(--dark) para que sea negro */
+        color: white;
+        border-top-left-radius: var(--border-radius);
+        border-top-right-radius: var(--border-radius);
+    }
+
+    .modal-header h4 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: white; /* Texto blanco para contraste con fondo negro */
+    }
+
+    .modal-body {
+        padding: 20px;
+        min-height: 80px;
+        display: flex;
+        align-items: center;
+        background-color: white;
+    }
+
+    .modal-body p {
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: var(--dark); /* Texto negro para el mensaje del modal */
+    }
+
+    .modal-footer {
+        padding: 15px 20px;
+        background-color: #f8f8f8;
+        border-bottom-left-radius: var(--border-radius);
+        border-bottom-right-radius: var(--border-radius);
+        text-align: right;
+    }
+
+    .modal-footer button {
+        margin-left: 10px;
+    }
+
+    /* Botón principal (Aceptar) */
+    #modal-confirm-btn {
+        background-color: var(--primary);
+        color: white;
+    }
+
+    #modal-confirm-btn:hover {
+        background-color: var(--secondary);
+    }
+
+    /* Botón secundario (Cancelar) */
+    #modal-cancel-btn {
+        background-color: var(--grey);
+        color: white;
+    }
+
+    #modal-cancel-btn:hover {
+        background-color: #555;
+    }
+
+    /* Animaciones para el modal */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideDown {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+
+        /* Estilos para transiciones suaves */
+        #login-form, #search-form {
+        transition: all 0.3s ease-out;
+    }
+
+    #search-form {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    /* Añadir un fondo semi-transparente al overlay de carga */
+    .loading-overlay {
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-spinner {
+        width: 80px;
+        height: 80px;
+        border: 5px solid var(--primary);
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        animation: rotate 1s linear infinite;
+    }
+
+    @keyframes rotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
     </style>
-    <script>
-        const backendUrl = 'https://fastapi-backend-201226788937.us-central1.run.app';
-        let token = '';
-
-        async function login(event) {
-            event.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('error-message');
-            errorMessage.textContent = '';
-
-            try {
-                const response = await fetch(`${backendUrl}/token`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({
-                        'username': username,
-                        'password': password,
-                    }),
-                });
-                const data = await response.json();
-
-                if (response.ok) {
-                    token = data.access_token;
-                    document.getElementById('login-form').style.display = 'none';
-                    document.getElementById('search-form').style.display = 'block';
-                } else {
-                    errorMessage.textContent = 'Error de autenticación: ' + data.detail;
-                }
-            } catch (error) {
-                console.error('Error during login:', error);
-                errorMessage.textContent = 'Error de conexión: ' + error.message;
-            }
-        }
-
-        async function logout() {
-            token = '';
-            // Limpiar los campos de usuario y contraseña
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-            // Mostrar el formulario de login y ocultar el de búsqueda
-            document.getElementById('login-form').style.display = 'block';
-            document.getElementById('search-form').style.display = 'none';
-            document.getElementById('results').innerHTML = '';
-        }
-
-        async function searchImages(event) {
-            event.preventDefault();
-            const sku = document.getElementById('sku').value;
-            const startDate = document.getElementById('start-date').value.split('-').reverse().join('/'); // Convertir fecha a formato dd/mm/yyyy
-            const endDate = document.getElementById('end-date').value.split('-').reverse().join('/'); // Convertir fecha a formato dd/mm/yyyy
-            const errorMessage = document.getElementById('error-message');
-            const results = document.getElementById('results');
-            errorMessage.textContent = ''; // Limpiar mensaje de error
-            results.innerHTML = ''; // Limpiar resultados anteriores
-
-            if ((startDate && !endDate) || (!startDate && endDate)) {
-                errorMessage.textContent = 'Debe seleccionar ambas fechas si selecciona una de ellas.';
-                return;
-            }
-
-            try {
-                let url = '';
-                if (sku && startDate && endDate) {
-                    url = `${backendUrl}/search_by_sku_and_date/${sku}?start_date=${startDate}&end_date=${endDate}`;
-                } else if (sku) {
-                    url = `${backendUrl}/search_by_sku/${sku}`;
-                } else if (startDate && endDate) {
-                    url = `${backendUrl}/search_by_date?start_date=${startDate}&end_date=${endDate}`;
-                } else {
-                    errorMessage.textContent = 'Debe ingresar un SKU o un rango de fechas.';
-                    return;
-                }
-                console.log(`Sending search request to ${url}`);
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-                const data = await response.json();
-    
-                if (response.ok) {
-                    if (data.results && data.results.length > 0) {
-                        const tableContainer = document.createElement('div');
-                        tableContainer.className = 'table-container';
-                        
-                        const table = document.createElement('table');
-                        table.innerHTML = `
-                            <thead>
-                                <tr>
-                                    <th>Code</th>
-                                    <th>Largo (cm)</th>
-                                    <th>Ancho (cm)</th>
-                                    <th>Alto (cm)</th>
-                                    <th>Peso (Kg)</th>
-                                    <th>Fecha</th>
-                                    <th>Equipo</th>
-                                    <th>Imagen</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        `;
-                        data.results.forEach(item => {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td>${item.code}</td>
-                                <td>${item.length}</td>
-                                <td>${item.width}</td>
-                                <td>${item.heigth}</td>
-                                <td>${item.weigth}</td>
-                                <td>${item.measure_date}</td>
-                                <td>${item.machine_pid}</td>
-                                <td><img src="${item.image_url}" alt="Imagen" onclick="downloadImage('${item.image_url}')"></td>
-                            `;
-                            table.querySelector('tbody').appendChild(row);
-                        });
-                        
-                        tableContainer.appendChild(table);
-                        results.appendChild(tableContainer);
-                    } else {
-                        results.innerHTML = '<div class="empty-results"><p>No se encontraron resultados.</p></div>';
-                    }
-                    // Limpiar campos después de la búsqueda exitosa
-                    document.getElementById('sku').value = '';
-                    document.getElementById('start-date').value = '';
-                    document.getElementById('end-date').value = '';
-                    validateDates(); // Asegurarse de que los campos no sean obligatorios después de limpiar
-                } else {
-                    errorMessage.textContent = 'Error al buscar resultados: ' + data.detail;
-                }
-            } catch (error) {
-                console.error('Error during search:', error);
-                errorMessage.textContent = 'Error de conexión: ' + error.message;
-            }
-        }
-    
-        async function downloadImage(imageUrl) {
-            const imageName = imageUrl.split('/').pop(); // Extraer nombre del archivo
-            try {
-                const response = await fetch(`${backendUrl}/download/${imageName}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-                const data = await response.json();
-    
-                if (response.ok) {
-                    window.open(data.download_url, '_blank'); // Abrir la URL firmada en una nueva pestaña
-                } else {
-                    alert('Error al generar el link de descarga: ' + data.detail);
-                }
-            } catch (error) {
-                alert('Error de conexión: ' + error.message);
-            }
-        }
-    </script>
+    <!-- Referencia al archivo JavaScript externo -->
+    <script src="app.js" defer></script>
 </head>
 <body>
-    <div class="container">
-        <div class="logos-container">
+    <div class="navbar">
+        <div class="navbar-content">
             <div class="logo-wrapper">
-                <img src="https://montrasolutions.com/montra/public/images/logo-montra.png" alt="Logo Montra" class="logo">
-            </div>
-            <div class="logo-wrapper">
-                <img src="https://www.lacasadelatos.com.co/wp-content/uploads/2016/06/deprisa.png" alt="Logo Deprisa" class="logo">
+                <img src="Montra.png" alt="Logo Montra" class="logo">
             </div>
         </div>
-        
+    </div>
+
+    <div class="container">
         <div class="header">
             <h1>Consulta Guías</h1>
             <p>Sistema de visualización y descarga de imágenes</p>
         </div>
-        
+
         <div id="error-message"></div>
-        
+
         <div class="card" id="login-form">
             <form onsubmit="login(event)">
                 <div class="form-group">
@@ -481,15 +805,20 @@
                 </div>
             </form>
         </div>
-        
+
         <div class="card" id="search-form" style="display: none;">
             <form onsubmit="searchImages(event)">
+                <!-- Agregar justo antes del campo de SKU en el formulario de búsqueda -->
+                <div class="form-group" id="admin-folder-selector" style="display: none;">
+                    <label for="admin-folder">Seleccionar Carpeta:</label>
+                    <select id="admin-folder">
+                        <option value="">Seleccione una carpeta</option>
+                    </select>
+                </div>
                 <div class="form-group">
                     <label for="sku">Buscar por SKU:</label>
                     <input type="text" id="sku" name="sku" placeholder="Ingrese el código SKU">
                 </div>
-                
-                <!-- Contenedor flexible para campos de fecha -->
                 <div class="date-fields-container">
                     <div class="form-group">
                         <label for="start-date">Fecha de inicio (opcional):</label>
@@ -500,30 +829,69 @@
                         <input type="date" id="end-date" name="end-date" placeholder="Seleccione una fecha de fin" onchange="validateDates()">
                     </div>
                 </div>
-                
+
                 <div class="buttons-container">
                     <button type="submit">Buscar</button>
+                    <button type="button" id="manage-folders-btn" onclick="showFolderManagementPanel()" style="display: none; background-color: #2c3e50;">Administrar Carpetas</button>
+                    <button type="button" id="admin-button" onclick="showAdminPanel()" style="display: none;">Administrar Usuarios</button>
+                    <button type="button" id="config-fields-button" onclick="showClientConfigPanel()" style="display: none;">Configurar Campos</button>
                     <button type="button" class="logout" onclick="logout()">Cerrar Sesión</button>
                 </div>
             </form>
         </div>
-        
+
+        <div class="card" id="user-info" style="display: none;">
+            <!-- La información del usuario se llenará dinámicamente -->
+        </div>
+
         <div id="results"></div>
+
+        <!-- Panel de Administración - Solo visible para administradores -->
+        <div class="card admin-panel" id="admin-panel" style="display: none;">
+            <h3>Gestión de Usuarios</h3>
+            <p>Administre los usuarios del sistema y sus permisos</p>
+            
+            <div class="buttons-container">
+                <button type="button" id="list-users-btn" onclick="listUsers()">Listar Usuarios</button>
+                <button type="button" id="add-user-btn" onclick="showAddUserForm()">Agregar Usuario</button>
+                <button type="button" id="back-to-search-btn" onclick="hideAdminPanel()">Volver a Búsqueda</button>
+            </div>
+            
+            <div id="user-list-container" class="mt-20"></div>
+            
+            <div id="user-form-container" class="mt-20" style="display: none;">
+                <!-- El formulario se cargará dinámicamente -->
+            </div>
+        </div>
+
+        <!-- El panel de configuración de campos se creará dinámicamente con JavaScript -->
+
+        <div class="footer">
+            <p>© 2025 Montra Solutions | Lider en cadena de suministros</p>
+        </div>
     </div>
-    <script>
-        function validateDates() {
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            const startDateInput = document.getElementById('start-date');
-            const endDateInput = document.getElementById('end-date');
-            if (startDate || endDate) {
-                startDateInput.required = true;
-                endDateInput.required = true;
-            } else {
-                startDateInput.required = false;
-                endDateInput.required = false;
-            }
-        }
-    </script>
+
+    <!-- Overlay de carga para el inicio de sesión -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- Modal personalizado para alertas y confirmaciones -->
+    <div id="custom-modal" class="custom-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="modal-title">Título del Modal</h4>
+            </div>
+            <div class="modal-body">
+                <p id="modal-message">Mensaje del modal</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="modal-confirm-btn" class="primary">Aceptar</button>
+                <button type="button" id="modal-cancel-btn" class="logout">Cancelar</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
