@@ -484,6 +484,37 @@
             gap: 10px;
         }
 
+        .password-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .password-toggle-btn {
+            position: absolute;
+            right: 10px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #767676;
+            transition: color 0.3s;
+        }
+        
+        .password-toggle-btn:hover {
+            color: #333;
+            background: transparent;
+            transform: none;
+        }
+        
+        .eye-icon {
+            width: 22px;
+            height: 22px;
+        }
+
         .checkbox-container {
             display: flex;
             align-items: center;
@@ -772,6 +803,8 @@
     </style>
     <!-- Referencia al archivo JavaScript externo -->
     <script src="app.js" defer></script>
+    <!-- Librería para exportar a Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="navbar">
@@ -796,9 +829,23 @@
                     <label for="username">Usuario:</label>
                     <input type="text" id="username" name="username" required placeholder="Ingrese su nombre de usuario">
                 </div>
+                <!-- Modificación del campo de contraseña en el login-form -->
                 <div class="form-group">
                     <label for="password">Contraseña:</label>
-                    <input type="password" id="password" name="password" required placeholder="Ingrese su contraseña">
+                    <div class="password-input-container">
+                        <input type="password" id="password" name="password" required placeholder="Ingrese su contraseña">
+                        <button type="button" id="toggle-password" class="password-toggle-btn" aria-label="Mostrar contraseña">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="eye-icon eye-open" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="eye-icon eye-closed" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <line x1="2" y1="2" x2="22" y2="22"></line>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="buttons-container">
                     <button type="submit">Iniciar Sesión</button>
@@ -806,15 +853,26 @@
             </form>
         </div>
 
+        <!-- Añadir el selector de máquina justo después del selector de carpeta para administradores en el formulario de búsqueda -->
         <div class="card" id="search-form" style="display: none;">
             <form onsubmit="searchImages(event)">
-                <!-- Agregar justo antes del campo de SKU en el formulario de búsqueda -->
+                <!-- Selector de carpeta para administradores -->
                 <div class="form-group" id="admin-folder-selector" style="display: none;">
                     <label for="admin-folder">Seleccionar Carpeta:</label>
                     <select id="admin-folder">
                         <option value="">Seleccione una carpeta</option>
                     </select>
                 </div>
+
+                <!-- NUEVO: Selector de máquina -->
+                <div class="form-group" id="machine-selector" style="display: none;">
+                    <label for="machine">Filtrar por Máquina:</label>
+                    <select id="machine">
+                        <option value="">Todas las máquinas</option>
+                        <!-- Las opciones se cargarán dinámicamente desde el backend -->
+                    </select>
+                </div>
+
                 <div class="form-group">
                     <label for="sku">Buscar por SKU:</label>
                     <input type="text" id="sku" name="sku" placeholder="Ingrese el código SKU">
