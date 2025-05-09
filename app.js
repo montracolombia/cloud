@@ -992,7 +992,7 @@ async function loadClientConfig() {
         
         if (response.ok) {
             const data = await response.json();
-            
+
             if (data.clientConfig) {
                 // Para usuarios normales, se devuelve una sola configuración
                 clientConfig = data.clientConfig.tableConfig;
@@ -1523,7 +1523,7 @@ function exportToExcel(results, columns) {
             
             // Generar el nombre del archivo
             const filenameParts = formattedForFilename(now);
-            const filename = `[CUBISCAN]${filenameParts}.xlsx`;
+            const filename = `CUBISCAN-${filenameParts}.xlsx`;
             
             // Guardar el archivo
             XLSX.writeFile(wb, filename);
