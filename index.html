@@ -232,12 +232,37 @@
             margin-top: 30px;
         }
 
+        /* Estilos para la nueva disposición de botones */
         .buttons-container {
             display: flex;
-            justify-content: flex-start;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .left-buttons {
+            display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 20px;
+        }
+        
+        .right-buttons {
+            margin-left: auto;
+        }
+
+        /* En móviles, ajustar la disposición */
+        @media (max-width: 768px) {
+            .buttons-container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .right-buttons {
+                margin-left: 0;
+                align-self: flex-end;
+            }
         }
 
         @media (max-width: 768px) {
@@ -804,7 +829,8 @@
     <!-- Referencia al archivo JavaScript externo -->
     <script src="app.js" defer></script>
     <!-- Librería para exportar a Excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body>
     <div class="navbar">
@@ -889,11 +915,16 @@
                 </div>
 
                 <div class="buttons-container">
-                    <button type="submit">Buscar</button>
-                    <button type="button" id="manage-folders-btn" onclick="showFolderManagementPanel()" style="display: none; background-color: #2c3e50;">Administrar Carpetas</button>
-                    <button type="button" id="admin-button" onclick="showAdminPanel()" style="display: none;">Administrar Usuarios</button>
-                    <button type="button" id="config-fields-button" onclick="showClientConfigPanel()" style="display: none;">Configurar Campos</button>
-                    <button type="button" class="logout" onclick="logout()">Cerrar Sesión</button>
+                    <div class="left-buttons">
+                        <button type="submit">Buscar</button>
+                        <button type="button" id="clear-button" onclick="clearSearchFields()">Limpiar</button>
+                        <button type="button" id="manage-folders-btn" onclick="showFolderManagementPanel()" style="display: none; background-color: #2c3e50;">Administrar Carpetas</button>
+                        <button type="button" id="admin-button" onclick="showAdminPanel()" style="display: none;">Administrar Usuarios</button>
+                        <button type="button" id="config-fields-button" onclick="showClientConfigPanel()" style="display: none;">Configurar Campos</button>
+                    </div>
+                    <div class="right-buttons">
+                        <button type="button" class="logout" onclick="logout()">Cerrar Sesión</button>
+                    </div>
                 </div>
             </form>
         </div>
