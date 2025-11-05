@@ -1,10 +1,12 @@
 // Configuración global
 const backendUrl = 'https://fastapi-backend-201226788937.us-central1.run.app';
-//const backendUrl= 'http://127.0.0.1:8000'
+//const backendUrl= 'http://127.0.0.1:8080'
 let token = '';
 let searchInProgress = false; // Prevent simultaneous searches
 let isAdmin = false; // Variable global para controlar si el usuario es administrador
 let currentUsers = []; // Variable para almacenar los usuarios actuales
+let hasCalculatorAccess = false;
+
 
 // Variables globales para controlar la configuración del cliente
 let clientConfig = null;
@@ -190,6 +192,7 @@ async function login(event) {
     loadingOverlay.classList.add('active');
 
     try {
+        // ========== PASO 1: LOGIN Y OBTENER TOKEN ==========
         const response = await fetch(`${backendUrl}/token`, {
             method: 'POST',
             headers: {
@@ -211,13 +214,63 @@ async function login(event) {
         const data = await response.json();
         token = data.access_token;
         
+        // ⭐ DEBUG 1: Ver qué devuelve el backend
+        console.log('🔍 DEBUG 1 - Respuesta completa del login:', data);
+        
+        // ========== PASO 2: GUARDAR DATOS DE CALCULADORA ==========
+        // Guardar si tiene acceso a calculadora
+        hasCalculatorAccess = data.has_calculator_access || false;
+        localStorage.setItem('token', token);
+        localStorage.setItem('username', username);
+        localStorage.setItem('has_calculator_access', hasCalculatorAccess);
+        
+        // ⭐ DEBUG 2: Ver acceso a calculadora
+        console.log('🔍 DEBUG 2 - has_calculator_access:', hasCalculatorAccess);
+        
+        // Guardar la carpeta del usuario
+        const userFolder = data.user_folder || '';
+        localStorage.setItem('user_folder', userFolder);
+        
+        // ⭐ DEBUG 3: Ver carpeta del usuario
+        console.log('🔍 DEBUG 3 - user_folder:', userFolder);
+        console.log('🔍 DEBUG 3 - user_folder lowercase:', userFolder.toLowerCase());
+        console.log('🔍 DEBUG 3 - user_folder length:', userFolder.length);
+        console.log('🔍 DEBUG 3 - user_folder charCodes:', Array.from(userFolder).map(c => c.charCodeAt(0)));
+        
+        // ========== PASO 3: VERIFICAR SI DEBE REDIRIGIR A CALCULADORA ==========
+        const folderIsCalculadora = userFolder && userFolder.toLowerCase().trim() === 'calculadora';
+        const shouldRedirectToCalculator = folderIsCalculadora && hasCalculatorAccess;
+        
+        // ⭐ DEBUG 4: Ver condiciones de redirección
+        console.log('🔍 DEBUG 4 - Verificación de redirección:', {
+            'userFolder_raw': userFolder,
+            'userFolder_trimmed': userFolder.trim(),
+            'userFolder_lowercase': userFolder.toLowerCase(),
+            'folderIsCalculadora': folderIsCalculadora,
+            'hasCalculatorAccess': hasCalculatorAccess,
+            'shouldRedirectToCalculator': shouldRedirectToCalculator
+        });
+        
+        // ========== PASO 4: REDIRIGIR SI CORRESPONDE ==========
+        if (shouldRedirectToCalculator) {
+            console.log('✅ DEBUG 5 - Cumple condiciones. Redirigiendo a calculator.html...');
+            setTimeout(() => {
+                window.location.href = 'calculator.html';
+            }, 100);
+            return; // Detener ejecución del resto del login
+        } else {
+            console.log('➡️ DEBUG 5 - NO cumple condiciones. Continuando con flujo normal de búsqueda');
+            // Usuario va a búsqueda, cambiar texto del header
+            updateHeaderText(true);
+        }
+
+        // ========== PASO 5: FLUJO NORMAL DE BÚSQUEDA ==========
         // Verificar si el usuario es administrador
         const userResponse = await fetch(`${backendUrl}/me`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
             },
         });
-        
         if (!userResponse.ok) {
             loadingOverlay.classList.remove('active');
             showErrorMessage('Error al obtener información del usuario');
@@ -226,6 +279,8 @@ async function login(event) {
         
         const userData = await userResponse.json();
         isAdmin = userData.role === "admin";
+        
+        console.log('📋 DEBUG 6 - Usuario es admin:', isAdmin);
         
         // Ocultar el formulario de login primero (sin transición)
         const loginForm = document.getElementById('login-form');
@@ -255,11 +310,11 @@ async function login(event) {
         
         // CRÍTICO: Obtener información del usuario y configuraciones
         // Esto debe completarse ANTES de mostrar la interfaz
-        console.log("Obteniendo información del usuario y configuraciones...");
+        console.log("📋 Obteniendo información del usuario y configuraciones...");
         await getUserInfo();
         
         // Registrar estado de las etiquetas para depuración
-        console.log("Estado después de getUserInfo:");
+        console.log("📋 Estado después de getUserInfo:");
         logDOMElements();
         
         // Si el usuario es administrador, preparar el menú de administración
@@ -286,12 +341,12 @@ async function login(event) {
         
         // Verificar nuevamente que las etiquetas se hayan aplicado correctamente
         setTimeout(() => {
-            console.log("Estado final de las etiquetas:");
+            console.log("📋 Estado final de las etiquetas:");
             logDOMElements();
         }, 500);
         
     } catch (error) {
-        console.error('Error durante el inicio de sesión:', error);
+        console.error('❌ Error durante el inicio de sesión:', error);
         loadingOverlay.classList.remove('active');
         showErrorMessage('Error de conexión: ' + error.message);
     }
@@ -420,6 +475,9 @@ function logout() {
     errorMessage.textContent = '';
     errorMessage.style.display = 'none';  // Ocultar completamente
     
+    // AGREGAR: Resetear título del header
+    updateHeaderText(false); // false = mostrar texto de bienvenida
+
     // Ocultar formulario de búsqueda con animación
     const searchForm = document.getElementById('search-form');
     searchForm.style.opacity = '0';
@@ -494,6 +552,44 @@ function logout() {
         setTimeout(adjustFooterPosition, 300);
     }, 300);
 }
+
+function clearSearchFields() {
+    // Limpiar campos de entrada
+    document.getElementById('sku').value = '';
+    document.getElementById('start-date').value = '';
+    document.getElementById('end-date').value = '';
+    
+    // Reiniciar selector de máquina a "Todas las máquinas"
+    const machineSelect = document.getElementById('machine');
+    if (machineSelect) {
+        machineSelect.value = '';
+    }
+    
+    // Si es admin, reiniciar selector de carpeta
+    const adminFolderSelect = document.getElementById('admin-folder');
+    if (adminFolderSelect && isAdmin) {
+        adminFolderSelect.value = '';
+    }
+    
+    // Limpiar resultados de la tabla
+    const resultsDiv = document.getElementById('results');
+    if (resultsDiv) {
+        resultsDiv.innerHTML = '';
+    }
+    
+    // Limpiar mensajes de error
+    const errorMessage = document.getElementById('error-message');
+    if (errorMessage) {
+        errorMessage.textContent = '';
+        errorMessage.style.display = 'none';
+    }
+    
+    // Ajustar posición del footer
+    setTimeout(adjustFooterPosition, 100);
+    
+    console.log('✅ Resultados y campos limpiados');
+}
+
 
 // Función mejorada para mostrar mensajes de error
 function showErrorMessage(message) {
@@ -1694,6 +1790,7 @@ function validateDates() {
 
 // Función para mostrar panel de administración (actualizada)
 function showAdminPanel() {
+    hideErrorMessage(); // ← AGREGAR ESTA LÍNEA AL INICIO
     if (!isAdmin) {
         showAlert('Solo los administradores pueden acceder al panel de administración', 'Acceso denegado');
         return;
@@ -1847,6 +1944,9 @@ function displayUserList(users) {
                 <td>
                     <button class="action-btn" onclick="editUser('${user.username}')">Editar</button>
                     <button class="action-btn delete" onclick="confirmDeleteUser('${user.username}')">Eliminar</button>
+                    ${isAdmin && user.folder && user.folder.toLowerCase() === 'calculadora' ? 
+                        `<button class="action-btn" onclick="showCalculatorManagement('${user.username}')" style="background-color: #2c3e50;">Calculadoras</button>` 
+                        : ''}
                 </td>
             </tr>
         `;
@@ -2518,6 +2618,7 @@ function cancelUserForm() {
 
 // Función para mostrar panel de configuración de campos (actualizada)
 function showClientConfigPanel() {
+    hideErrorMessage();
     if (!isAdmin) {
         showAlert('Solo los administradores pueden configurar los campos.', 'Acceso denegado');
         return;
@@ -3300,8 +3401,16 @@ function updateLabelsInDOM(codeLabel, machineLabel, folderLabel) {
     }
 }
 
+function hideErrorMessage() {
+    const errorMessage = document.getElementById('error-message');
+    if (errorMessage) {
+        errorMessage.textContent = '';
+        errorMessage.style.display = 'none';
+    }
+}
 
 function showFolderManagementPanel() {
+    hideErrorMessage()
     console.log('Función showFolderManagementPanel ejecutándose');
     
     if (!isAdmin) {
@@ -3792,6 +3901,7 @@ async function deleteFolder(folderId) {
 
 // Función mejorada para volver a la pantalla de búsqueda
 function returnToSearch() {
+    hideErrorMessage();
     // Ocultar panel de gestión de carpetas
     const folderPanel = document.getElementById('folder-management-panel');
     if (folderPanel) {
@@ -3808,3 +3918,417 @@ function returnToSearch() {
     // Ajustar la posición del footer
     setTimeout(adjustFooterPosition, 300);
 }
+
+// Función para navegar a la calculadora
+function goToCalculator() {
+    window.location.href = 'calculator.html';
+}
+
+// Función para actualizar el título según el contexto
+function updateHeaderText(isSearchMode = false) {
+    const titleElement = document.getElementById('header-title');
+    const subtitleElement = document.getElementById('header-subtitle');
+    
+    if (titleElement && subtitleElement) {
+        if (isSearchMode) {
+            titleElement.textContent = 'Consulta de Guías';
+            subtitleElement.textContent = 'Sistema de visualización y descarga de imágenes';
+        } else {
+            titleElement.textContent = 'Bienvenidos a la plataforma de usuarios de Montra';
+            subtitleElement.textContent = 'Inicie sesión para continuar';
+        }
+    }
+}
+
+
+async function showCalculatorManagement(username) {
+    hideErrorMessage();
+    try {
+        const response = await fetch(`${backendUrl}/calculator/user-access/${username}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al obtener accesos de calculadora');
+        }
+
+        const config = await response.json();
+        
+        // Crear el modal con diseño mejorado
+        const modalHtml = `
+            <div class="modal-overlay" id="calculator-management-modal" onclick="closeCalculatorModal(event)">
+                <div class="modal-content calculator-modal-improved" onclick="event.stopPropagation()">
+                    
+                    <!-- HEADER -->
+                    <div class="modal-header-calc">
+                        <div class="header-info">
+                            <h3>🧮 Gestión de Calculadoras</h3>
+                            <p class="user-info">Usuario: <strong>${username}</strong></p>
+                        </div>
+                        <button class="close-button" onclick="closeCalculatorModal()">×</button>
+                    </div>
+                    
+                    <div class="modal-body-calc">
+                        
+                        <!-- SECCIÓN AGREGAR -->
+                        <div class="section-add">
+                            <h4 class="section-title">➕ Agregar Nueva Calculadora</h4>
+                            <div class="form-add-calculator">
+                                <div class="form-grid-add">
+                                    <div class="form-field">
+                                        <label>Calculadora</label>
+                                        <select id="new-calculator-select" class="input-calc">
+                                            <option value="">-- Seleccione --</option>
+                                            <option value="calculator1">CubiScan Estático (Bajo)</option>
+                                            <option value="calculator2">CubiScan Sobredimensionados</option>
+                                            <option value="calculator3">CubiScan Dinámico (Alto)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-field">
+                                        <label>Costo Equipo (USD)</label>
+                                        <input type="number" 
+                                                id="new-calculator-cost" 
+                                                class="input-calc"
+                                                step="0.01" 
+                                                placeholder="Vacío = default">
+                                    </div>
+                                    
+                                    <div class="form-field checkbox-field">
+                                        <label class="checkbox-container">
+                                            <input type="checkbox" id="new-calculator-can-edit">
+                                            <span class="checkbox-text">Puede editar costo</span>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-field btn-field">
+                                        <button class="btn-add-calc" onclick="addCalculatorAccess('${username}')">
+                                            ➕ Agregar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- SEPARADOR -->
+                        <div class="divider-calc"></div>
+                        
+                        <!-- SECCIÓN ASIGNADAS -->
+                        <div class="section-assigned">
+                            <h4 class="section-title">📊 Calculadoras Asignadas</h4>
+                            <div class="calculators-list">
+                                ${config.calculators && config.calculators.length > 0 ? 
+                                    config.calculators.map(calc => `
+                                        <div class="calc-card-improved">
+                                            <div class="calc-card-top">
+                                                <div class="calc-icon">🧮</div>
+                                                <div class="calc-name">${getCalculatorNameShort(calc.calculator_id)}</div>
+                                            </div>
+                                            <div class="calc-card-info">
+                                                <div class="info-row">
+                                                    <span class="info-icon">💰</span>
+                                                    <span class="info-text">$${calc.equipment_cost ? calc.equipment_cost.toLocaleString('es-CO') : 'Por defecto'}</span>
+                                                </div>
+                                                <div class="info-row">
+                                                    <span class="info-icon">✏️</span>
+                                                    <span class="info-text ${calc.can_edit_cost ? 'text-success' : 'text-danger'}">
+                                                        ${calc.can_edit_cost ? 'Puede editar' : 'No edita'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <button class="btn-delete-calc" onclick="removeCalculatorAccessDirect('${username}', '${calc.calculator_id}')">
+                                                🗑️ Eliminar
+                                            </button>
+                                        </div>
+                                    `).join('') 
+                                    : '<div class="no-calculators-msg">✨ No hay calculadoras asignadas</div>'
+                                }
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const existingModal = document.getElementById('calculator-management-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showErrorMessage('Error al cargar la gestión de calculadoras');
+    }
+}
+
+// Función auxiliar para nombres cortos
+function getCalculatorNameShort(calculatorId) {
+    const names = {
+        'calculator1': 'CubiScan Estático',
+        'calculator2': 'CubiScan Sobredim.',
+        'calculator3': 'CubiScan Dinámico'
+    };
+    return names[calculatorId] || calculatorId;
+}
+
+async function removeCalculatorAccessDirect(username, calculatorId) {
+    try {
+        const response = await fetch(
+            `${backendUrl}/calculator/access/remove?username=${username}&calculator_id=${calculatorId}`,
+            {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Error al eliminar acceso');
+        }
+
+        // Recargar el panel sin mostrar mensaje de éxito
+        showCalculatorManagement(username);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert(error.message || 'Error al eliminar acceso', 'Error');
+    }
+}
+
+function getCalculatorName(calculatorId) {
+    const names = {
+        'calculator1': 'CubiScan Estático (Throughput Bajo)',
+        'calculator2': 'CubiScan Sobredimensionados',
+        'calculator3': 'CubiScan Dinámico (Throughput Alto)'
+    };
+    return names[calculatorId] || calculatorId;
+}
+
+function closeCalculatorModal(event) {
+    if (!event || event.target.id === 'calculator-management-modal') {
+        const modal = document.getElementById('calculator-management-modal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+}
+
+async function addCalculatorAccess(username) {
+    const calculatorId = document.getElementById('new-calculator-select').value;
+    const costInput = document.getElementById('new-calculator-cost').value;
+    const canEdit = document.getElementById('new-calculator-can-edit').checked;
+    
+    if (!calculatorId) {
+        showAlert('Por favor seleccione una calculadora', 'Atención');
+        return;
+    }
+    
+    try {
+        const requestData = {
+            username: username,
+            calculator_id: calculatorId,
+            equipment_cost: costInput ? parseFloat(costInput) : null,
+            can_edit_cost: canEdit
+        };
+        
+        const response = await fetch(`${backendUrl}/calculator/access/add`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            
+            // Si ya tiene acceso, mostrar modal amigable
+            if (response.status === 400 && error.detail && error.detail.includes('ya tiene acceso')) {
+                showAlert('El usuario ya tiene acceso a esta calculadora', 'Información');
+                return;
+            }
+            
+            throw new Error(error.detail || 'Error al agregar acceso');
+        }
+
+        // Limpiar formulario
+        document.getElementById('new-calculator-select').value = '';
+        document.getElementById('new-calculator-cost').value = '';
+        document.getElementById('new-calculator-can-edit').checked = false;
+        
+        // Recargar el panel
+        showCalculatorManagement(username);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert(error.message || 'Error al agregar acceso a calculadora', 'Error');
+    }
+}
+
+async function removeCalculatorAccess(username, calculatorId) {
+    showConfirm(
+        `¿Está seguro de eliminar el acceso a ${getCalculatorName(calculatorId)}?`,
+        'Confirmar eliminación',
+        async (confirmed) => {
+            if (!confirmed) return;
+            
+            try {
+                const response = await fetch(
+                    `${backendUrl}/calculator/access/remove?username=${username}&calculator_id=${calculatorId}`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Error al eliminar acceso');
+                }
+
+                showAlert('Acceso eliminado exitosamente', 'Éxito');
+                // Recargar el panel
+                showCalculatorManagement(username);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorMessage(error.message || 'Error al eliminar acceso');
+            }
+        }
+    );
+}
+
+async function editCalculatorAccess(username, calculatorId, currentCost, currentCanEdit) {
+    const newCost = prompt(`Ingrese el nuevo costo del equipo (actual: $${currentCost || 'No definido'}):`, currentCost || '');
+    if (newCost === null) return; // Cancelado
+    
+    showConfirm(
+        '¿Permitir al usuario editar el costo del equipo?',
+        'Permiso de edición',
+        async (canEdit) => {
+            try {
+                const requestData = {
+                    username: username,
+                    calculator_id: calculatorId,
+                    equipment_cost: newCost ? parseFloat(newCost) : null,
+                    can_edit_cost: canEdit
+                };
+                
+                const response = await fetch(`${backendUrl}/calculator/access/update`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Error al actualizar acceso');
+                }
+
+                showAlert('Acceso actualizado exitosamente', 'Éxito');
+                // Recargar el panel
+                showCalculatorManagement(username);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorMessage(error.message || 'Error al actualizar acceso');
+            }
+        }
+    );
+}
+
+function forceViewportRecalculation() {
+    // Forzar recalculo del ancho del body
+    document.body.style.width = '100%';
+    
+    // Trigger reflow (forzar que el navegador recalcule)
+    void document.body.offsetWidth;
+    
+    // Ajustar footer si existe la función
+    if (typeof adjustFooterPosition === 'function') {
+        adjustFooterPosition();
+    }
+    
+    console.log('🔄 Viewport recalculado');
+}
+
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eye-icon');
+    
+    if (!passwordInput || !eyeIcon) return;
+    
+    if (passwordInput.type === 'password') {
+        // MOSTRAR contraseña → Ojo ABIERTO (sin tachado)
+        passwordInput.type = 'text';
+        eyeIcon.innerHTML = `
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+        `;
+    } else {
+        // OCULTAR contraseña → Ojo TACHADO (con línea)
+        passwordInput.type = 'password';
+        eyeIcon.innerHTML = `
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+            <line x1="2" y1="2" x2="22" y2="22"></line>
+        `;
+    }
+}
+
+// Ejecutar al cargar la página completamente
+window.addEventListener('DOMContentLoaded', function() {
+    forceViewportRecalculation();
+    console.log('✅ Viewport inicializado');
+});
+
+// Ejecutar al cambiar el tamaño de la ventana
+window.addEventListener('resize', function() {
+    forceViewportRecalculation();
+});
+
+// Ejecutar cuando cambia la orientación del dispositivo
+window.addEventListener('orientationchange', function() {
+    // Pequeño delay para esperar que termine la animación de rotación
+    setTimeout(function() {
+        forceViewportRecalculation();
+        console.log('📱 Orientación cambiada');
+    }, 100);
+});
+
+// Fix adicional para iOS - recalcular al hacer scroll
+let scrollTimeout;
+window.addEventListener('scroll', function() {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(function() {
+        // Solo recalcular si estamos en la parte superior
+        if (window.scrollY < 100) {
+            forceViewportRecalculation();
+        }
+    }, 150);
+}, { passive: true });
+
+// Fix para cuando el teclado virtual se cierra/abre en móvil
+window.addEventListener('focusin', function() {
+    setTimeout(forceViewportRecalculation, 300);
+});
+
+window.addEventListener('focusout', function() {
+    setTimeout(forceViewportRecalculation, 300);
+});
+
+console.log('✅ Fix de viewport móvil cargado');
+
+
