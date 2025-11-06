@@ -677,6 +677,23 @@
                 min-height: 50px;
             }
             
+            .navbar-content {
+                padding: 0px 15px !important;
+            }
+            
+            .logo-wrapper {
+                height: 0px !important;
+            }
+            
+            .logo {
+                max-height: 40px !important;
+            }
+            
+            .nav-buttons button {
+                padding: 8px 15px !important;
+                font-size: 0.85rem !important;
+            }
+            
             .footer {
                 height: 50px;
                 min-height: 50px;
@@ -697,9 +714,28 @@
             .calculator-card {
                 padding: 10px;
             }
+            
+            body {
+                padding: 10px !important;
+            }
         }
 
+        .readonly-input {
+            background-color: #f0f0f0 !important;
+            color: #666 !important;
+            cursor: not-allowed !important;
+            border-color: #ddd !important;
+        }
 
+        .readonly-input:focus {
+            outline: none !important;
+            box-shadow: none !important;
+            border-color: #ddd !important;
+        }
+
+        .readonly-input:hover {
+            background-color: #f0f0f0 !important;
+        }
 
 
 
@@ -752,7 +788,7 @@
                     { id: 'piezas', label: 'Cantidad de piezas por día', default: 2000, type: 'number' },
                     { id: 'tarifa', label: 'Tarifa promedio de venta del cliente (USD/kg)', default: 0.5, type: 'number', step: '0.01' },
                     { id: 'peso_paquete', label: 'Peso promedio de paquete (kg)', default: 10, type: 'number', step: '0.01' },
-                    { id: 'incidencia', label: 'Incidencia promedio % peso volumen > peso real', default: 30, type: 'number', step: '0.01', subtitle: 'Porcentaje expresado como número (ej: 30 para 30%)' }
+                    { id: 'incidencia', label: 'Incidencia promedio % peso volumen > peso real', default: 30, type: 'number', step: '0.01', subtitle: '', readonly: true}
                 ],
                 calculate: 'calculateType1'
             },
@@ -764,19 +800,19 @@
                     { id: 'piezas', label: 'Cantidad de piezas por día', default: 500, type: 'number' },
                     { id: 'tarifa', label: 'Tarifa promedio de venta del cliente (USD/kg)', default: 0.5, type: 'number', step: '0.01' },
                     { id: 'peso_paquete', label: 'Peso promedio de paquete (kg)', default: 80, type: 'number', step: '0.01' },
-                    { id: 'relacion', label: 'Relación peso volumétrico vs real', default: 2.5, type: 'number', step: '0.1', subtitle: 'Ejemplo: 2.5 significa que el peso volumétrico es 2.5 veces el peso real' }
+                    { id: 'relacion', label: 'Relación peso volumétrico vs real', default: 2.5, type: 'number', step: '0.1', subtitle: 'Ejemplo: 2.5 significa que el peso volumétrico es 2.5 veces el peso real' , readonly: true}
                 ],
                 calculate: 'calculateType2'
             },
             'calculator3': {
                 title: 'CubiScan Dinámico',
-                subtitle: 'Paquetes Throughput Alto',
+                subtitle: 'Paquetes Throughput Medio',
                 defaultCost: 130000,
                 fields: [
                     { id: 'piezas', label: 'Cantidad de piezas por día', default: 5000, type: 'number' },
                     { id: 'tarifa', label: 'Tarifa promedio de venta del cliente (USD/kg)', default: 0.5, type: 'number', step: '0.01' },
                     { id: 'peso_paquete', label: 'Peso promedio de paquete (kg)', default: 10, type: 'number', step: '0.01' },
-                    { id: 'incidencia', label: 'Incidencia promedio % peso volumen > peso real', default: 30, type: 'number', step: '0.01', subtitle: 'Porcentaje expresado como número (ej: 30 para 30%)' }
+                    { id: 'incidencia', label: 'Incidencia promedio % peso volumen > peso real', default: 30, type: 'number', step: '0.01', subtitle: '', readonly: true }
                 ],
                 calculate: 'calculateType1'
             }
@@ -900,6 +936,7 @@
                                id="${id}_${field.id}" 
                                value="${field.default}" 
                                ${field.step ? `step="${field.step}"` : ''}
+                               ${field.readonly ? 'readonly class="readonly-input"' : ''}
                                oninput="${config.calculate}('${id}')">
                         ${field.subtitle ? `<div class="subtitle">${field.subtitle}</div>` : ''}
                     </div>
