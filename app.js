@@ -27,6 +27,26 @@ let defaultConfig = {
 // Agregar una nueva variable global para almacenar las máquinas
 let availableMachines = []; // Lista de máquinas disponibles para el cliente actual
 
+
+// Función para detectar si un archivo es imagen o video
+function getMediaType(filename) {
+    if (!filename) return 'unknown';
+    
+    const extension = filename.split('.').pop().toLowerCase();
+    
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
+    const videoExtensions = ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv'];
+    
+    if (imageExtensions.includes(extension)) {
+        return 'image';
+    } else if (videoExtensions.includes(extension)) {
+        return 'video';
+    } else {
+        return 'unknown';
+    }
+}
+
+
 // Función para asegurar que el footer siempre esté visible apropiadamente
 function adjustFooterPosition() {
     const container = document.querySelector('.container');
@@ -1373,36 +1393,110 @@ function renderDynamicTable(results) {
             // Renderizar según el tipo de dato
             switch(column.type) {
                 case 'image':
-                    // Estrategias para encontrar la imagen
-                    let imageUrl = null;
+                    // Estrategias para encontrar la imagen/video
+                    let mediaUrl = null;
                     
                     // 1. Usar directamente image_url si está presente
                     if (item['image_url']) {
-                        imageUrl = item['image_url'];
-                        console.log('Imagen encontrada por image_url:', imageUrl);
+                        mediaUrl = item['image_url'];
+                        console.log('Media encontrado por image_url:', mediaUrl);
                     }
                     
-                    // Crear elemento de imagen
-                    if (imageUrl) {
-                        const img = document.createElement('img');
-                        img.src = imageUrl;
-                        img.alt = "Imagen";
-                        img.dataset.fullpath = imageUrl;
-                        img.onclick = () => downloadImage(imageUrl);
+                    // Crear elemento de imagen o video
+                    if (mediaUrl) {
+                        // Extraer nombre del archivo de la URL
+                        const fileName = mediaUrl.split('/').pop().split('?')[0];
+                        const mediaType = getMediaType(fileName);
                         
-                        // Estilos para hacer la imagen más pequeña y manejable
-                        img.style.maxWidth = '100px';
-                        img.style.maxHeight = '100px';
-                        img.style.objectFit = 'contain';
-                        img.style.cursor = 'pointer';
-                        
-                        td.appendChild(img);
+                        if (mediaType === 'image') {
+                            // Crear elemento de imagen
+                            const img = document.createElement('img');
+                            img.src = mediaUrl;
+                            img.alt = "Imagen";
+                            img.dataset.fullpath = mediaUrl;
+                            img.onclick = () => openMediaModal(mediaUrl, 'image');
+                            
+                            // Estilos para hacer la imagen más pequeña y manejable
+                            img.style.maxWidth = '100px';
+                            img.style.maxHeight = '100px';
+                            img.style.objectFit = 'contain';
+                            img.style.cursor = 'pointer';
+                            
+                            td.appendChild(img);
+                            
+                        } else if (mediaType === 'video') {
+                            // Crear elemento de video con diseño minimalista
+                            const videoContainer = document.createElement('div');
+                            videoContainer.style.cssText = `
+                                position: relative;
+                                width: 100px;
+                                height: 100px;
+                                cursor: pointer;
+                                background: #2c3e50;
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                border-radius: 8px;
+                                border: 2px solid #34495e;
+                                transition: all 0.3s ease;
+                            `;
+                            
+                            // Icono de descarga
+                            const icon = document.createElement('div');
+                            icon.innerHTML = '⬇';
+                            icon.style.cssText = `
+                                font-size: 32px;
+                                color: white;
+                                margin-bottom: 5px;
+                            `;
+                            
+                            // Texto VIDEO
+                            const text = document.createElement('div');
+                            text.innerHTML = 'VIDEO';
+                            text.style.cssText = `
+                                color: white;
+                                font-size: 11px;
+                                font-weight: 600;
+                                letter-spacing: 1px;
+                            `;
+                            
+                            // Texto "Descargar"
+                            const downloadText = document.createElement('div');
+                            downloadText.innerHTML = 'Descargar';
+                            downloadText.style.cssText = `
+                                color: #bdc3c7;
+                                font-size: 9px;
+                                margin-top: 3px;
+                            `;
+                            
+                            videoContainer.appendChild(icon);
+                            videoContainer.appendChild(text);
+                            videoContainer.appendChild(downloadText);
+                            
+                            // Hover effect
+                            videoContainer.onmouseover = () => {
+                                videoContainer.style.background = '#34495e';
+                                videoContainer.style.transform = 'scale(1.05)';
+                                videoContainer.style.borderColor = '#7f8c8d';
+                            };
+                            videoContainer.onmouseout = () => {
+                                videoContainer.style.background = '#2c3e50';
+                                videoContainer.style.transform = 'scale(1)';
+                                videoContainer.style.borderColor = '#34495e';
+                            };
+                            
+                            videoContainer.onclick = () => openMediaModal(mediaUrl, 'video');
+                            
+                            td.appendChild(videoContainer);
+                        } else {
+                            td.textContent = 'Formato no soportado';
+                        }
                     } else {
                         td.textContent = 'No disponible';
-                        console.log('No se encontró imagen para el item:', item);
+                        console.log('No se encontró media para el item:', item);
                     }
                     break;
-                
                 case 'number':
                     if (fieldValue !== undefined && fieldValue !== null) {
                         // Formatear número con decimales según configuración
@@ -1726,14 +1820,17 @@ function loadScript(url, callback) {
     document.head.appendChild(script);
 }
 
-// Función para descargar imágenes (actualizada)
-async function downloadImage(imageUrl) {
+// Cambiar el nombre de la función y su comentario
+async function downloadImage(mediaUrl) {
     try {
-        // Extraer solo el nombre de la imagen de la URL completa
-        const imagePath = extractImagePathFromUrl(imageUrl);
-        console.log('Intentando descargar imagen con ruta:', imagePath);
+        // Extraer solo el nombre del archivo de la URL completa
+        const mediaPath = extractImagePathFromUrl(mediaUrl);
+        console.log('Intentando descargar archivo con ruta:', mediaPath);
         
-        const response = await fetch(`${backendUrl}/download/${encodeURIComponent(imagePath)}`, {
+        // Extraer el nombre del archivo
+        const fileName = mediaPath.split('/').pop();
+        
+        const response = await fetch(`${backendUrl}/download/${encodeURIComponent(mediaPath)}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
             },
@@ -1747,11 +1844,186 @@ async function downloadImage(imageUrl) {
         }
         
         const data = await response.json();
-        window.open(data.download_url, '_blank'); // Abrir la URL firmada en una nueva pestaña
+        
+        // NUEVO: Forzar descarga en lugar de abrir en nueva pestaña
+        const downloadUrl = data.download_url;
+        
+        // Crear un elemento <a> temporal para forzar la descarga
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = fileName; // Esto sugiere el nombre del archivo
+        link.target = '_blank';
+        
+        // Para videos, agregar parámetro de descarga si es posible
+        const extension = fileName.split('.').pop().toLowerCase();
+        const videoExtensions = ['mp4', 'avi', 'mov', 'webm', 'mkv'];
+        
+        if (videoExtensions.includes(extension)) {
+            // Para videos, forzar descarga usando fetch + blob
+            console.log('📹 Descargando video...');
+            
+            fetch(downloadUrl)
+                .then(res => res.blob())
+                .then(blob => {
+                    const blobUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = blobUrl;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(blobUrl);
+                    console.log('✅ Video descargado');
+                })
+                .catch(err => {
+                    console.error('Error al descargar video:', err);
+                    // Si falla el blob, abrir en nueva pestaña
+                    window.open(downloadUrl, '_blank');
+                });
+        } else {
+            // Para imágenes, abrir en nueva pestaña (funcionan bien)
+            window.open(downloadUrl, '_blank');
+        }
+        
     } catch (error) {
         console.error('Error de conexión:', error);
         showAlert('Error de conexión: ' + error.message, 'Error');
     }
+}
+
+// Función para abrir modal con imagen o video
+function openMediaModal(mediaUrl, mediaType) {
+    // Extraer extensión del archivo
+    const fileName = mediaUrl.split('/').pop().split('?')[0];
+    const extension = fileName.split('.').pop().toLowerCase();
+    
+    // Para videos, siempre ofrecer descarga (GCS no permite reproducción directa)
+    if (mediaType === 'video') {
+        showConfirm(
+            `📹 Formato: .${extension.toUpperCase()}\n\nLos videos no se pueden reproducir en el navegador\n\n¿Deseas descargarlo para verlo?`,
+            'Descargar Video',
+            (confirmed) => {
+                if (confirmed) {
+                    downloadImage(mediaUrl);
+                }
+            }
+        );
+        return;
+    }
+    
+    // Para imágenes, mostrar en modal
+    const modal = document.createElement('div');
+    modal.id = 'media-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        padding: 20px;
+    `;
+    
+    // Crear botones de acción
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.cssText = `
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 10px;
+        z-index: 10001;
+    `;
+    
+    // Botón de descargar
+    const downloadBtn = document.createElement('button');
+    downloadBtn.innerHTML = '⬇ Descargar';
+    downloadBtn.style.cssText = `
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    `;
+    downloadBtn.onclick = () => downloadImage(mediaUrl);
+    
+    // Botón de cerrar
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '✕ Cerrar';
+    closeBtn.style.cssText = `
+        background-color: #666;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    `;
+    closeBtn.onclick = () => document.body.removeChild(modal);
+    
+    buttonContainer.appendChild(downloadBtn);
+    buttonContainer.appendChild(closeBtn);
+    
+    // Crear contenedor de la imagen
+    const mediaContainer = document.createElement('div');
+    mediaContainer.style.cssText = `
+        max-width: 90%;
+        max-height: 80%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    `;
+    
+    // Crear imagen
+    const img = document.createElement('img');
+    img.src = mediaUrl;
+    img.style.cssText = `
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    `;
+    
+    // Spinner de carga para la imagen
+    const loadingSpinner = document.createElement('div');
+    loadingSpinner.innerHTML = '⏳ Cargando imagen...';
+    loadingSpinner.style.cssText = `
+        position: absolute;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+    `;
+    
+    img.onload = () => {
+        loadingSpinner.style.display = 'none';
+    };
+    
+    img.onerror = () => {
+        loadingSpinner.innerHTML = '⚠️ Error al cargar imagen';
+        loadingSpinner.style.color = '#ff0000';
+    };
+    
+    mediaContainer.appendChild(loadingSpinner);
+    mediaContainer.appendChild(img);
+    
+    modal.appendChild(buttonContainer);
+    modal.appendChild(mediaContainer);
+    
+    // Cerrar al hacer click fuera del contenido
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
+        }
+    };
+    
+    document.body.appendChild(modal);
 }
 
 // Función auxiliar para extraer la ruta de la imagen de una URL firmada
@@ -2106,7 +2378,7 @@ function handleRoleSelection() {
                         <div class="password-container">
                             <input type="password" id="password-input" required>
                             <label class="checkbox-container">
-                                <input type="checkbox" id="show-password" onchange="togglePasswordVisibility()">
+                                <input type="checkbox" id="show-password" onchange="toggleUserPasswordVisibility()">
                                 <span>Mostrar contraseña</span>
                             </label>
                         </div>
@@ -2269,7 +2541,7 @@ async function editUser(username) {
                         <div class="password-container">
                             <input type="password" id="password-input" value="${userComplete.password || ''}">
                             <label class="checkbox-container">
-                                <input type="checkbox" id="show-password" onchange="togglePasswordVisibility()">
+                                <input type="checkbox" id="show-password" onchange="toggleUserPasswordVisibility()">
                                 <span>Mostrar contraseña</span>
                             </label>
                         </div>
@@ -2329,7 +2601,7 @@ async function editUser(username) {
     setTimeout(adjustFooterPosition, 300);
 }
 
-function togglePasswordVisibility() {
+function toggleUserPasswordVisibility() {
     const passwordInput = document.getElementById('password-input');
     const showPasswordCheckbox = document.getElementById('show-password');
     
@@ -3981,9 +4253,9 @@ async function showCalculatorManagement(username) {
                                         <label>Calculadora</label>
                                         <select id="new-calculator-select" class="input-calc">
                                             <option value="">-- Seleccione --</option>
-                                            <option value="calculator1">CubiScan Estático (Bajo)</option>
+                                            <option value="calculator1">CubiScan Estático</option>
                                             <option value="calculator2">CubiScan Sobredimensionados</option>
-                                            <option value="calculator3">CubiScan Dinámico (Alto)</option>
+                                            <option value="calculator3">CubiScan Dinámico</option>
                                         </select>
                                     </div>
                                     
@@ -4330,5 +4602,3 @@ window.addEventListener('focusout', function() {
 });
 
 console.log('✅ Fix de viewport móvil cargado');
-
-
