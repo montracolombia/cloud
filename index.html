@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Consulta Guías</title>
+    <title>Montra</title>
     <!-- Estilos CSS -->
     <style>
         :root {
@@ -625,7 +625,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 9999;
+            z-index: 10001; /* Mayor que modal-overlay (10000) para aparecer encima */
             visibility: hidden;
             opacity: 0;
             transition: visibility 0s, opacity 0.3s linear;
@@ -714,7 +714,7 @@
     .custom-modal {
         display: none;
         position: fixed;
-        z-index: 9999;
+        z-index: 99999; /* Mayor que modal-overlay (10000) para aparecer encima */
         left: 0;
         top: 0;
         width: 100%;
@@ -725,6 +725,7 @@
     }
 
     .modal-content {
+        overflow: hidden; /* Para que el border-radius funcione correctamente */
         background-color: var(--light);
         margin: 15% auto;
         padding: 0;
@@ -738,6 +739,9 @@
     /* Actualización del estilo del encabezado del modal */
     .modal-header {
         display: flex;
+        background-color: var(--dark); /* Fondo negro como los otros modales */
+        color: white;
+        padding: 20px;
         justify-content: space-between;
         align-items: flex-start;
         margin-bottom: 20px;
@@ -826,7 +830,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        z-index: 9999;
+        z-index: 10001; /* Mayor que modal-overlay (10000) para aparecer encima */
     }
 
     .loading-spinner {
@@ -1257,7 +1261,7 @@
 
     /* FIX PARA Z-INDEX */
     .modal-overlay {
-        z-index: 99999 !important;
+        z-index: 10000 !important;
     }
 
     /* ANIMACIONES SUAVES */
@@ -1862,6 +1866,115 @@
             display: flex !important;
         }
     }
+
+    /* FIX ADICIONAL: Mejorar navbar en landscape */
+    @media (max-height: 500px) and (orientation: landscape) {
+        .logo-wrapper {
+            height: 25px !important;
+        }
+        
+        .logo {
+            max-height: 35px !important;
+        }
+        
+        .navbar-content {
+            padding: 5px 10px !important;
+        }
+        
+        body {
+            padding: 10px !important;
+        }
+    }
+
+    /* FIX MODAL CALCULADORAS EN MÓVIL */
+    @media (max-width: 768px) {
+        .form-grid-add {
+            grid-template-columns: 1fr !important;
+            gap: 15px;
+        }
+        
+        .checkbox-field {
+            padding-bottom: 0;
+        }
+        
+        .btn-field {
+            margin-top: 10px;
+        }
+        
+        .modal-header-calc {
+            position: relative;
+            padding-right: 60px !important; /* Espacio para el botón X */
+        }
+        
+        .modal-header-calc .close-button {
+            position: absolute !important;
+            right: 10px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+        }
+        
+        .calculator-modal-improved {
+            width: 95% !important;
+        }
+    }
+
+    /* FIX MODAL CALCULADORAS EN MÓVIL PEQUEÑO */
+    @media (max-width: 480px) {
+        .modal-header-calc {
+            padding: 12px 50px 12px 12px !important;
+        }
+        
+        .header-info h3 {
+            font-size: 1em !important;
+        }
+        
+        .user-info {
+            font-size: 0.8em !important;
+        }
+        
+        .modal-header-calc .close-button {
+            right: 5px !important;
+            width: 35px !important;
+            height: 35px !important;
+            font-size: 1.5em !important;
+        }
+    }
+
+    /* Estilos para modal de media */
+    #media-modal button:hover {
+        opacity: 0.8;
+        transform: translateY(-2px);
+    }
+
+    /* Estilos para contenedor de video en tabla */
+    .video-thumbnail-container {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        cursor: pointer;
+        background-color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: transform 0.2s;
+    }
+
+    .video-thumbnail-container:hover {
+        transform: scale(1.05);
+    }
+
+    /* Responsive para modal de media */
+    @media (max-width: 768px) {
+        #media-modal {
+            padding: 10px !important;
+        }
+        
+        #media-modal button {
+            padding: 8px 15px !important;
+            font-size: 0.9rem !important;
+        }
+    }
     </style>
     <!-- Referencia al archivo JavaScript externo -->
     <script src="app.js" defer></script>
@@ -1881,7 +1994,7 @@
     <div class="container">
         <div class="header">
             <h1 id="header-title">Bienvenidos a la plataforma de Montra</h1>
-            <p id="header-subtitle">Seleccione una opción para continuar</p>
+            <p id="header-subtitle"></p>
         </div>
 
         <div id="error-message"></div>
@@ -1906,6 +2019,7 @@
                             <svg class="eye-icon" id="eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
+                                <line x1="2" y1="2" x2="22" y2="22"></line>
                             </svg>
                         </button>
                     </div>
